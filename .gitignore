@@ -32,3 +32,8 @@ coverage/
 
 # Kotlin 编译期错误快照
 .kotlin/
+
+# 本地临时凭据（切勿入库）
+.token
+.gh_token
+*.token
