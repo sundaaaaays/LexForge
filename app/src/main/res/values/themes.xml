@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 窗口级主题：只负责启动背景与状态栏，真正的配色在 Compose 里 -->
+    <style name="Theme.LexForge" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#FAFAF7</item>
+    </style>
+</resources>

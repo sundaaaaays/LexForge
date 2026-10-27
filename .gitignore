@@ -1,0 +1,34 @@
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# JVM 崩溃转储（Gradle / Kotlin daemon 偶发，单个几十 MB，绝不入库）
+hs_err_pid*.log
+replay_pid*.log
+core.*.log
+
+# 安装包：默认忽略，但保留 dist/ 下的发布产物，
+# 让 README 里的 raw 下载链接可用
+*.apk
+*.aab
+!dist/*.apk
+
+# 原始词库数据体积大（ECDICT 66MB），不入库；
+# 用 data/raw/fetch.sh 或 make fetch-dict 拉取
+data/raw/*.csv
+data/raw/*.zip
+data/raw/*.7z
+data/raw/*.part
+
+# 本地生成的覆盖率 / 报告
+*.exec
+coverage/
+
+# Kotlin 编译期错误快照
+.kotlin/

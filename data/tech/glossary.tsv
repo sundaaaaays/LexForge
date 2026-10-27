@@ -1,0 +1,268 @@
+﻿# 技术术语种子表 v0.1
+# 格式: 英文<TAB>词性<TAB>中文<TAB>备注（可选）
+# 写作规范: 中文列要能直接读进句子，避免"…的"式词典腔
+idempotent	adj.	幂等的：多次执行与一次执行效果相同	反义 non-idempotent
+idempotency	n.	幂等性	接口设计基本要求
+idempotency key	n.	幂等键	支付/接口重试
+backpressure	n.	背压：下游处理不过来时向上游反馈限流	与限流区别：方向相反
+throttle	v.	限流：限制单位时间的请求速率	与 rate limit 近义
+debounce	v.	防抖：等输入稳定后再触发	与 throttle 对比记忆
+rate limiting	n.	限流	网关常用能力
+circuit breaker	n.	断路器：失败累积到阈值后直接拒绝	熔断模式
+failover	n.	故障转移	主备切换
+shard	n.	分片：水平切分后的独立存储单元	与 partition 区别
+sharding	n.	分片（技术）	水平扩展手段
+partition	n.	分区	可指磁盘/消息队列分区
+replication	n.	复制（多副本）	主从复制
+replica	n.	副本	读副本 read replica
+consensus	n.	共识	Raft/Paxos 解决的问题
+quorum	n.	法定人数；多数派	分布式共识
+leader election	n.	选主	共识算法的一环
+eventual consistency	n.	最终一致性	BASE 理论
+strong consistency	n.	强一致性	线性一致性更强
+race condition	n.	竞态条件	并发缺陷
+deadlock	n.	死锁	互相等待
+livelock	n.	活锁	一直在动但没进展
+starvation	n.	饥饿：线程长期拿不到资源	与死锁区别
+atomic	adj.	原子的：不可分割的	atomic operation
+mutex	n.	互斥锁	mutual exclusion
+semaphore	n.	信号量	控制并发数
+barrier	n.	屏障；栅栏	线程同步点
+thread-safe	adj.	线程安全的	反义 thread-unsafe
+reentrant	adj.	可重入的	可重入锁
+serialization	n.	序列化；（并发）串行化	两义项须分开
+deserialize	v.	反序列化	—
+marshal	v.	编组；序列化（跨语言语境）	—
+payload	n.	有效载荷；报文主体	与 header 相对
+header	n.	头；首部	HTTP header
+middleware	n.	中间件	—
+proxy	n.	代理	正向/反向代理
+reverse proxy	n.	反向代理	网关常见
+load balancing	n.	负载均衡	—
+sticky session	n.	会话保持	同一用户打同一后端
+health check	n.	健康检查	探针
+liveness probe	n.	存活探针	失败则重启
+readiness probe	n.	就绪探针	失败则摘流量
+graceful shutdown	n.	优雅停机	先摘流量再退出
+backward compatible	adj.	向后兼容的	新版本能读老数据
+deprecated	adj.	已弃用的：仍可用但不建议使用	不等于已移除
+deprecate	v.	弃用	标记为不推荐
+deprecation	n.	弃用（状态）	—
+breaking change	n.	破坏性变更	需要大版本号
+semantic versioning	n.	语义化版本	semver
+regression	n.	回归（缺陷）：改动导致原本正常的功能出错	不是"退化"
+regression test	n.	回归测试	—
+flaky test	n.	不稳定测试：同一代码随机通过/失败	需隔离
+smoke test	n.	冒烟测试：只验主流程是否可用	—
+canary release	n.	金丝雀发布	灰度的一种
+blue-green deployment	n.	蓝绿部署	两套环境切换
+rollback	n.	回滚	—
+rollout	n.	灰度放量；推出	—
+feature flag	n.	功能开关	—
+observability	n.	可观测性	日志/指标/链路三支柱
+telemetry	n.	遥测数据	—
+tracing	n.	链路追踪	distributed tracing
+span	n.	跨度（追踪中的一个操作单元）	—
+metric	n.	指标	—
+throughput	n.	吞吐量	—
+latency	n.	延迟	P99 latency
+tail latency	n.	长尾延迟	P99/P999
+bottleneck	n.	瓶颈	—
+hot path	n.	热路径：执行最频繁的代码路径	优化重点
+cold start	n.	冷启动	—
+warm-up	n.	预热	—
+cache	n.	缓存	—
+cache hit	n.	缓存命中	—
+cache invalidation	n.	缓存失效	"两大难题之一"
+eviction	n.	淘汰（缓存）	LRU eviction
+TTL	n.	生存时间	time to live
+memoization	n.	记忆化：缓存函数计算结果	—
+lazy evaluation	n.	惰性求值	—
+eager evaluation	n.	及早求值	—
+closure	n.	闭包	—
+higher-order function	n.	高阶函数	—
+immutable	adj.	不可变的	—
+mutable	adj.	可变的	—
+side effect	n.	副作用	—
+pure function	n.	纯函数	—
+dependency injection	n.	依赖注入	—
+inversion of control	n.	控制反转	—
+middle tier	n.	中间层	—
+monorepo	n.	单体仓库	—
+polyrepo	n.	多仓库	—
+refactor	v.	重构：不改行为地调整结构	—
+technical debt	n.	技术债	—
+code review	n.	代码评审	—
+lint	n.	静态检查（工具）	—
+type inference	n.	类型推断	—
+generic	adj.	泛型的	—
+nullable	adj.	可为空的	—
+null pointer	n.	空指针	—
+exception handling	n.	异常处理	—
+stack trace	n.	调用栈；堆栈跟踪	—
+heap	n.	堆	与 stack 相对
+stack	n.	栈	—
+garbage collection	n.	垃圾回收	GC
+memory leak	n.	内存泄漏	—
+buffer overflow	n.	缓冲区溢出	—
+overflow	n.	溢出	数值溢出/队列溢出
+underflow	n.	下溢	—
+truncate	v.	截断	—
+padding	n.	填充	对齐填充
+alignment	n.	对齐	16KB page alignment
+endianness	n.	字节序	大小端
+checksum	n.	校验和	—
+crc	n.	循环冗余校验	—
+hash	n.	哈希；散列	—
+collision	n.	冲突（哈希冲突）	—
+bucket	n.	桶	哈希桶
+index	n.	索引	—
+primary key	n.	主键	—
+foreign key	n.	外键	—
+join	n.	连接（表连接）	—
+full table scan	n.	全表扫描	—
+index scan	n.	索引扫描	—
+query plan	n.	查询计划	—
+isolation level	n.	隔离级别	事务
+transaction	n.	事务	—
+commit	v.	提交（事务）	—
+rollback（事务）	v.	回滚事务	—
+deadlock detection	n.	死锁检测	—
+migration	n.	迁移	数据库/系统迁移
+schema	n.	模式；表结构	—
+normalization	n.	归一化；范式化	视语境
+denormalization	n.	反范式化	—
+sharding key	n.	分片键	—
+pagination	n.	分页	—
+cursor	n.	游标	分页游标/鼠标光标
+offset	n.	偏移量	—
+batch	n.	批；批量	—
+streaming	n.	流式（处理）	—
+backfill	n.	回填（数据）	—
+replay	v.	重放（消息/日志）	—
+idle	adj.	空闲的	—
+timeout	n.	超时	—
+retry	n.	重试	—
+backoff	n.	退避	exponential backoff 指数退避
+jitter	n.	抖动	重试加随机抖动
+fallback	n.	兜底；降级方案	—
+degrade	v.	降级	—
+circuit open	adj.	熔断（打开状态）	—
+serialize	v.	序列化	—
+compress	v.	压缩	—
+encrypt	v.	加密	—
+decrypt	v.	解密	—
+ciphertext	n.	密文	—
+plaintext	n.	明文	—
+salt	n.	盐值	密码学
+signature	n.	签名	—
+certificate	n.	证书	—
+handshake	n.	握手	TLS 握手
+access token	n.	访问令牌	—
+refresh token	n.	刷新令牌	—
+scope	n.	作用域；权限范围	OAuth scope
+permission	n.	权限	—
+authentication	n.	认证：你是谁	—
+authorization	n.	授权：你能做什么	—
+credential	n.	凭证	—
+rate limit	n.	速率限制	—
+quota	n.	配额	—
+tenant	n.	租户	多租户
+namespace	n.	命名空间	—
+isolation	n.	隔离	—
+container	n.	容器	—
+image	n.	镜像	容器镜像
+orchestration	n.	编排	—
+provisioning	n.	开通；资源准备	—
+deployment	n.	部署	—
+manifest	n.	清单文件	—
+annotation	n.	注解；标注	—
+attribute	n.	属性	—
+identifier	n.	标识符	—
+literal	n.	字面量	—
+operand	n.	操作数	—
+operator	n.	运算符	—
+precedence	n.	优先级	运算符优先级
+overload	v.	重载	—
+override	v.	重写；覆盖	—
+polymorphism	n.	多态	—
+inheritance	n.	继承	—
+composition	n.	组合	优于继承
+interface	n.	接口	—
+abstract	adj.	抽象的	—
+implementation	n.	实现	—
+instantiate	v.	实例化	—
+invoke	v.	调用	—
+dispatch	n.	分派	动态分派
+callback	n.	回调	—
+promise	n.	承诺对象（异步）	—
+future	n.	未来对象（异步结果）	—
+coroutine	n.	协程	—
+thread pool	n.	线程池	—
+context switch	n.	上下文切换	—
+preemption	n.	抢占	—
+scheduler	n.	调度器	—
+priority inversion	n.	优先级反转	—
+deadline	n.	截止时间	—
+throttling	n.	节流	—
+sampling	n.	采样	—
+aggregation	n.	聚合	—
+window	n.	窗口	时间窗口
+histogram	n.	直方图	—
+percentile	n.	分位数	P95/P99
+baseline	n.	基线	性能基线
+benchmark	n.	基准测试	—
+profiling	n.	性能剖析	—
+footprint	n.	占用（内存/磁盘）	memory footprint
+overhead	n.	开销	—
+contention	n.	争用	锁争用
+scalability	n.	可扩展性	—
+resilience	n.	韧性；容错能力	—
+availability	n.	可用性	SLA 99.9%
+durability	n.	持久性	—
+integrity	n.	完整性	—
+consistency	n.	一致性	—
+idempotence	n.	幂等性	—
+id	n.	标识；标识符（identifier 的缩写）	源码里 id 指主键/唯一标识
+api	n.	API；应用程序接口	application programming interface
+url	n.	URL；统一资源定位符	—
+http	n.	HTTP 协议	—
+json	n.	JSON（一种数据交换格式）	—
+sql	n.	SQL（结构化查询语言）	—
+sdk	n.	SDK；软件开发工具包	—
+cli	n.	CLI；命令行界面	—
+ui	n.	UI；用户界面	—
+cpu	n.	CPU；中央处理器	—
+ram	n.	RAM；内存	—
+bug	n.	缺陷；程序错误	技术义项优先于"昆虫"
+patch	n.	补丁	—
+commit	n.	提交（版本库）	—
+merge	v.	合并（分支/代码）	—
+branch	n.	分支（版本库）	—
+deploy	v.	部署	—
+cluster	n.	集群	—
+node	n.	节点	—
+pod	n.	Pod（容器编排的最小调度单元）	—
+queue	n.	队列	—
+token	n.	令牌；词法单元	两义项按语境
+log	n.	日志	技术义项优先于"原木"
+port	n.	端口	技术义项优先于"港口"
+thread	n.	线程	技术义项优先于"线"
+process	n.	进程；处理	技术义项优先于"过程"
+buffer	n.	缓冲区	—
+affordable	adj.	负担得起的；价格合理的	派生自 afford
+unaffordable	adj.	负担不起的；太贵的	派生自 affordable
+readable	adj.	可读的；易读的	派生自 read
+readability	n.	可读性	派生自 readable
+unreadable	adj.	不可读的；难以阅读的	派生自 readable
+usable	adj.	可用的；好用的	派生自 use
+usability	n.	可用性	派生自 usable
+reusable	adj.	可复用的	派生自 use
+reusability	n.	可复用性	派生自 reusable
+maintainable	adj.	可维护的	派生自 maintain
+maintainability	n.	可维护性	派生自 maintainable
+configurable	adj.	可配置的	派生自 configure
+extensible	adj.	可扩展的	派生自 extend
+scalable	adj.	可扩展的；可伸缩的	派生自 scale
+portable	adj.	可移植的；便携的	派生自 port
+idempotency	n.	幂等性	见 idempotent

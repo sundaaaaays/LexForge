@@ -1,0 +1,6431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>词锋 LexForge — Android 离线词典开发文档</title>
+<style>
+:root{
+  --bg:#fafaf8; --surface:#ffffff; --text:#1a1a18; --muted:#6b6b66;
+  --line:#e6e6e0; --accent:#1f6f4a; --accent-soft:#eaf3ee;
+  --code-bg:#f5f5f1; --code-line:#e2e2da; --th:#f0f0ea;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15.5px; line-height:1.75; -webkit-font-smoothing:antialiased;
+}
+.layout{display:flex; align-items:flex-start; max-width:1560px; margin:0 auto;}
+nav{
+  position:sticky; top:0; width:266px; flex:0 0 266px; height:100vh;
+  overflow-y:auto; padding:26px 16px 60px; border-right:1px solid var(--line);
+  background:linear-gradient(180deg,#fbfbf8,#f7f7f2);
+}
+nav .brand{font-weight:700; font-size:15px; letter-spacing:.02em; margin:0 0 2px 8px;}
+nav .brand small{display:block; font-weight:400; color:var(--muted); font-size:12px; margin-top:3px;}
+nav .meta{font-size:11.5px; color:var(--muted); margin:10px 8px 18px; line-height:1.6;}
+nav a{
+  display:block; padding:5px 10px; color:#3d3d38; text-decoration:none;
+  font-size:13px; border-radius:6px; border-left:2px solid transparent;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+nav a:hover{background:#efefe9; color:var(--text);}
+nav a.active{background:var(--accent-soft); color:var(--accent); border-left-color:var(--accent); font-weight:600;}
+main{flex:1 1 auto; min-width:0; padding:44px 56px 120px; max-width:1080px;}
+h1{font-size:30px; line-height:1.35; margin:0 0 26px; letter-spacing:-.01em;}
+h2{
+  font-size:22px; margin:56px 0 16px; padding-bottom:10px;
+  border-bottom:1px solid var(--line); scroll-margin-top:24px;
+}
+h3{font-size:17px; margin:32px 0 10px; color:#24402f;}
+h4{font-size:15px; margin:22px 0 8px; color:#3a4a3f;}
+p{margin:10px 0;}
+a{color:var(--accent);}
+strong{font-weight:650;}
+hr{border:0; border-top:1px solid var(--line); margin:44px 0;}
+table{
+  border-collapse:collapse; width:100%; margin:16px 0; font-size:13.5px;
+  background:var(--surface); border:1px solid var(--line); border-radius:8px; overflow:hidden;
+}
+th{background:var(--th); text-align:left; font-weight:650; padding:9px 12px; border-bottom:1px solid var(--line); white-space:nowrap;}
+td{padding:8px 12px; border-bottom:1px solid #f0f0ea; vertical-align:top;}
+tr:last-child td{border-bottom:0;}
+tbody tr:hover{background:#fbfbf6;}
+code{
+  font-family:"JetBrains Mono","Cascadia Mono",Consolas,"Courier New",monospace;
+  font-size:.88em; background:var(--code-bg); border:1px solid var(--code-line);
+  border-radius:4px; padding:1px 5px; color:#1f3d2d;
+}
+pre{
+  background:var(--code-bg); border:1px solid var(--code-line); border-radius:10px;
+  padding:16px 18px; overflow-x:auto; margin:18px 0; line-height:1.55;
+}
+pre code{background:none; border:0; padding:0; font-size:12.6px; color:#22302a;}
+blockquote{
+  margin:16px 0; padding:12px 18px; background:#f4f7f3;
+  border-left:3px solid var(--accent); border-radius:0 8px 8px 0; color:#33503f;
+}
+blockquote p{margin:6px 0;}
+ul,ol{padding-left:24px; margin:10px 0;}
+li{margin:4px 0;}
+img{max-width:100%;}
+.nav-toggle{display:none;}
+@media (max-width:1000px){
+  nav{display:none;}
+  main{padding:30px 20px 80px;}
+  h1{font-size:24px;}
+  h2{font-size:19px;}
+  table{font-size:12.5px;}
+}
+@media print{
+  nav{display:none;} main{padding:0; max-width:none;}
+  body{font-size:11pt; background:#fff;}
+  h2{page-break-after:avoid;} table,pre{page-break-inside:avoid;}
+  pre{white-space:pre-wrap; word-break:break-word;}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <div class="brand">词锋 LexForge<small>Android 离线词典与翻译 App · 开发文档</small></div>
+  <div class="meta">v1.0 · 2026-10-27 · 15 章 + 附录 A–G</div>
+  <a href="#文档目录">文档目录</a>
+<a href="#0-阅读指引">0. 阅读指引</a>
+<a href="#1-项目概述">1. 项目概述</a>
+<a href="#2-需求规格">2. 需求规格</a>
+<a href="#3-总体架构">3. 总体架构</a>
+<a href="#4-词库数据工程">4. 词库数据工程</a>
+<a href="#5-检索内核">5. 检索内核</a>
+<a href="#6-词形还原与短语">6. 词形还原与短语</a>
+<a href="#专名判定启发式用于未收录兜底页首字母大写--不含常见词缀--不在词库--长度--3--出现在-docs-语料高频列表--判定为专名概率-08ui-提示可能是专有名词宁可提示可能是也不瞎猜">专名判定启发式（用于"未收录"兜底页）：首字母大写 + 不含常见词缀 + 不在词库 + 长度 ≥ 3 + 出现在 docs 语料高频列表 → 判定为专名概率 0.8，UI 提示"可能是专有名词"。宁可提示"可能是"，也不瞎猜。</a>
+<a href="#7-翻译引擎">7. 翻译引擎</a>
+<a href="#8-android-客户端实现">8. Android 客户端实现</a>
+<a href="#9-关键技术与坑位">9. 关键技术与坑位</a>
+<a href="#10-系统集成">10. 系统集成</a>
+<a href="#gt-这是本产品最重要的工程约束之一零权限任何新功能若需要新增权限必须在评审时说明不可替代性">&gt; 这是本产品最重要的工程约束之一：零权限。任何新功能若需要新增权限，必须在评审时说明不可替代性。</a>
+<a href="#11-测试与质量">11. 测试与质量</a>
+<a href="#12-构建签名与发布">12. 构建、签名与发布</a>
+<a href="#13-排期与人力">13. 排期与人力</a>
+<a href="#14-风险登记册">14. 风险登记册</a>
+<a href="#15-后续演进">15. 后续演进</a>
+<a href="#附录-a-数据库表结构">附录 A 数据库表结构</a>
+<a href="#附录-b-lexd-v1-字节级规范">附录 B LEXD v1 字节级规范</a>
+<a href="#附录-c-构建脚本骨架">附录 C 构建脚本骨架</a>
+<a href="#附录-d-检索内核参考实现">附录 D 检索内核参考实现</a>
+<a href="#附录-e-技术术语种子表节选-40-条">附录 E 技术术语种子表（节选 40 条）</a>
+<a href="#附录-f-开源组件与许可清单">附录 F 开源组件与许可清单</a>
+<a href="#附录-g-快速上手给接手的开发者">附录 G 快速上手（给接手的开发者）</a>
+<a href="#附录-h-开发环境与工具链">附录 H 开发环境与工具链</a>
+<a href="#附录-i-实现进度与实测数据v0202026-10-27">附录 I 实现进度与实测数据（v0.2.0，2026-10-27）</a>
+<a href="#附录-j-v030-增量2026-10-27">附录 J v0.3.0 增量（2026-10-27）</a>
+</nav>
+<main>
+<h1>词锋 LexForge — Android 离线词典与翻译 App 开发文档</h1>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文档版本</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>编写日期</td>
+<td>2026-10-27</td>
+</tr>
+<tr>
+<td>应用代号</td>
+<td>LexForge（中文名：词锋）</td>
+</tr>
+<tr>
+<td>交付形态</td>
+<td><code>.apk</code>（标准包 / 完整包 / 轻量包三种，arm64-v8a 为主）</td>
+</tr>
+<tr>
+<td>目标平台</td>
+<td>Android 8.0（API 26）～ Android 15（API 35）</td>
+</tr>
+<tr>
+<td>开发技术</td>
+<td>Kotlin 2.0 / Jetpack Compose / 自研检索内核 / ONNX Runtime Mobile</td>
+</tr>
+<tr>
+<td>核心能力</td>
+<td>离线查词 · 短语 · 中英互译 · 划词取词 · 生词本，全程零联网</td>
+</tr>
+<tr>
+<td>词库规模</td>
+<td>L1 专八核心 8,000 / L2 专八全量 13,000 / L3 扩展 400,000 / L4 技术术语 20,000</td>
+</tr>
+<tr>
+<td>使用场景</td>
+<td>阅读英文技术文档、源码注释、论文、RFC、API Reference</td>
+</tr>
+<tr>
+<td>文档状态</td>
+<td>可直接用于排期与开发执行</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="文档目录">文档目录</h2>
+<table>
+<thead>
+<tr>
+<th>章节</th>
+<th>标题</th>
+<th>一句话内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>阅读指引</td>
+<td>读者分工、术语表、文档约定</td>
+</tr>
+<tr>
+<td>1</td>
+<td>项目概述</td>
+<td>定位、为什么必须离线、场景痛点、能力清单、差异化</td>
+</tr>
+<tr>
+<td>2</td>
+<td>需求规格</td>
+<td>功能需求 28 条、性能指标、词汇覆盖度量化口径</td>
+</tr>
+<tr>
+<td>3</td>
+<td>总体架构</td>
+<td>分层架构、模块划分、查词时序、关键设计决策</td>
+</tr>
+<tr>
+<td>4</td>
+<td>词库数据工程</td>
+<td>数据授权、清洗流水线、专八分级、LEXD 包格式、体积预算</td>
+</tr>
+<tr>
+<td>5</td>
+<td>检索内核</td>
+<td>归一化、五级检索、前压缩索引、mmap、SymSpell、缓存</td>
+</tr>
+<tr>
+<td>6</td>
+<td>词形还原与短语</td>
+<td>屈折规则、不规则表、派生剥离、源码标识符拆词</td>
+</tr>
+<tr>
+<td>7</td>
+<td>翻译引擎</td>
+<td>分层策略、模型选型、int8 量化、分句调度、术语约束、质量评测</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Android 客户端</td>
+<td>技术选型、工程结构、设计令牌、界面稿、冷启动优化</td>
+</tr>
+<tr>
+<td>9</td>
+<td>关键技术与坑位</td>
+<td>18 个真实坑：16KB 对齐、assets mmap、剪贴板、ORT 等</td>
+</tr>
+<tr>
+<td>10</td>
+<td>系统集成</td>
+<td>划词、分享、发音、生词本、零权限清单</td>
+</tr>
+<tr>
+<td>11</td>
+<td>测试与质量</td>
+<td>测试金字塔、性能阈值、词库 golden test、24 条用例</td>
+</tr>
+<tr>
+<td>12</td>
+<td>构建与发布</td>
+<td>Gradle 关键配置、包体控制、签名、发版检查 15 项</td>
+</tr>
+<tr>
+<td>13</td>
+<td>排期与人力</td>
+<td>9 周里程碑、关键路径、DoD</td>
+</tr>
+<tr>
+<td>14</td>
+<td>风险登记册</td>
+<td>10 项风险及应对</td>
+</tr>
+<tr>
+<td>15</td>
+<td>后续演进</td>
+<td>v1.1 → v2.5 路线</td>
+</tr>
+<tr>
+<td>A–H</td>
+<td>附录</td>
+<td>数据库 DDL、LEXD 字节规范、构建脚本、内核代码、术语表、许可清单、上手命令、开发环境与工具链</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="0-阅读指引">0. 阅读指引</h2>
+<h3>0.1 目标读者</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>重点章节</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>产品 / 项目经理</td>
+<td>第 1、2、13、14 章</td>
+<td>定位、范围、排期、风险</td>
+</tr>
+<tr>
+<td>Android 开发</td>
+<td>第 3、5、8、9、10 章</td>
+<td>架构、检索内核、界面、坑位、系统集成</td>
+</tr>
+<tr>
+<td>数据 / 算法工程</td>
+<td>第 4、6、7 章</td>
+<td>词库构建、形态还原、翻译模型</td>
+</tr>
+<tr>
+<td>测试</td>
+<td>第 2、11 章</td>
+<td>需求验收口径、测试用例</td>
+</tr>
+<tr>
+<td>法务 / 发布</td>
+<td>第 4.1、12.5、12.6、附录 F</td>
+<td>数据授权、上架合规、开源许可</td>
+</tr>
+</tbody>
+</table>
+<h3>0.2 术语表</h3>
+<table>
+<thead>
+<tr>
+<th>术语</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lemma</td>
+<td>词元，一个词的词典原形（<code>running</code> → <code>run</code>，<code>better</code> → <code>good</code>）</td>
+</tr>
+<tr>
+<td>词形还原（Lemmatization）</td>
+<td>把屈折变化形式映射回 Lemma 的过程</td>
+</tr>
+<tr>
+<td>Headword</td>
+<td>词典条目头词，即用户查的那个词</td>
+</tr>
+<tr>
+<td>Front-coding</td>
+<td>把有序词条按"公共前缀长度 + 后缀"压缩存储的技术，索引体积可降 40%～60%</td>
+</tr>
+<tr>
+<td>mmap</td>
+<td>内存映射，把文件直接映射进进程地址空间，随机读不需要 read() 拷贝</td>
+</tr>
+<tr>
+<td>FTS5</td>
+<td>SQLite 的全文检索扩展，支持倒排索引与 BM25 排序</td>
+</tr>
+<tr>
+<td>SymSpell</td>
+<td>基于"删除距离"的拼写纠错算法，预处理后查错是 O(1) 级哈希查表</td>
+</tr>
+<tr>
+<td>NMT</td>
+<td>Neural Machine Translation，神经网络机器翻译</td>
+</tr>
+<tr>
+<td>ONNX / ORT</td>
+<td>开放神经网络交换格式 / ONNX Runtime 推理引擎</td>
+</tr>
+<tr>
+<td>int8 量化</td>
+<td>把 fp32 权重压成 8 位整数，模型体积约 ÷4，CPU 推理提速 1.5～3 倍</td>
+</tr>
+<tr>
+<td>SentencePiece</td>
+<td>子词分词器，NMT 模型的输入前端</td>
+</tr>
+<tr>
+<td>OOV</td>
+<td>Out-of-Vocabulary，词表外词，即"查不到"</td>
+</tr>
+<tr>
+<td>Token 覆盖率</td>
+<td>语料中能被词库解释的 token 占比，衡量词典覆盖能力的核心指标</td>
+</tr>
+<tr>
+<td>LEXD</td>
+<td>本项目自定义的词典二进制包格式（Lexicon Data）</td>
+</tr>
+<tr>
+<td>ABI</td>
+<td>应用二进制接口，本项目主发 <code>arm64-v8a</code></td>
+</tr>
+</tbody>
+</table>
+<h3>0.3 文档约定</h3>
+<ul>
+<li><strong>需求优先级</strong>：P0 = v1.0 必须交付；P1 = v1.0 尽力交付，延期可进 v1.1；P2 = 后续版本。</li>
+<li><strong>性能指标口径</strong>：所有延迟均为"中端机（骁龙 7 系 / 天玑 8000 级，8GB 内存，UFS 3.1）冷启动后稳定态"的 P95 值，测试方法见 11.3。</li>
+<li><strong>代码与配置</strong>：文中代码为参考实现，落地时以工程内代码为准；Gradle 片段基于 AGP 8.7 / Kotlin 2.0。</li>
+<li><strong>不写"待定"</strong>：凡是文档里出现的数字，都是可以先按此实现、后续用实测数据回归的目标值。</li>
+</ul>
+<hr>
+<h2 id="1-项目概述">1. 项目概述</h2>
+<h3>1.1 一句话定义</h3>
+<p><strong>一款装完就能用、断网也能查、查一个词 0.1 秒内出结果的 Android 离线词典，专门为"读英文技术文档"这件事做优化。</strong></p>
+<p>不是又一个大而全的词典，而是把三件事做到极致：</p>
+<ol>
+<li><strong>查得到</strong>——专八 13,000 词全覆盖，词形变化、短语、缩写、源码标识符都能命中；</li>
+<li><strong>查得快</strong>——输入即搜，本地索引 mmap 直读，不转圈、不联网、不弹广告；</li>
+<li><strong>看得懂</strong>——词条给技术语境下的释义排序，整句给离线机翻，术语按技术含义优先。</li>
+</ol>
+<h3>1.2 为什么必须离线</h3>
+<p>很多人会问：手机上不是有 Google 翻译、有道、欧路吗？为什么还要再造一个？</p>
+<p>因为<strong>读技术文档</strong>这个场景，对"在线词典"极不友好：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>在线词典 / 云端翻译</th>
+<th>本产品（全离线）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>网络依赖</td>
+<td>地铁、飞机、内网隔离环境、境外服务器被墙时不可用</td>
+<td>断网、飞行模式、无 SIM 卡均可用</td>
+</tr>
+<tr>
+<td>响应延迟</td>
+<td>一次查询 300ms～2s（含握手、排队），输入联想常常卡顿</td>
+<td>本地索引直读，P95 ≤ 8ms，输入即出</td>
+</tr>
+<tr>
+<td>隐私</td>
+<td>查询词、划词内容、整段文档上传到第三方服务器</td>
+<td>所有文本不出设备，可给出"零网络权限"的硬证明</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>免费版有广告 / 限次，去广告要订阅</td>
+<td>一次安装，永久免费，无账号、无内购</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td>服务下线、接口变更、App 被下架即失效</td>
+<td>装到手机上就永远能用</td>
+</tr>
+<tr>
+<td>干扰</td>
+<td>首页信息流、每日打卡、推送</td>
+<td>打开就是搜索框</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键判断</strong>：技术文档阅读是<strong>高频、短查询、强打断</strong>的行为。读一页英文文档，可能要查 15～30 次词，每次都等 1 秒网络往返，阅读心流就断了。离线不是"锦上添花"，而是这个场景的<strong>必要条件</strong>。</p>
+<h3>1.3 场景痛点拆解</h3>
+<p>读英文技术文档时，真正卡住人的往往不是"不认识这个单词"，而是下面五种情况：</p>
+<table>
+<thead>
+<tr>
+<th>痛点</th>
+<th>具体表现</th>
+<th>本产品的解法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>术语密集且偏门</td>
+<td><code>idempotent</code>、<code>serialization</code>、<code>backpressure</code>、<code>throttling</code> 通用词典释义不对味</td>
+<td>L4 技术术语表 20,000 条，技术义项排第一，附中文工程惯用译法</td>
+</tr>
+<tr>
+<td>词形与派生</td>
+<td>查 <code>deprecated</code> 查不到，得自己想到 <code>deprecate</code></td>
+<td>词形还原 + 派生词剥离，5 级检索自动回退（第 6 章）</td>
+</tr>
+<tr>
+<td>源码标识符</td>
+<td><code>getUserById</code>、<code>is_idempotent</code>、<code>HTTPStatusCode</code> 查不到</td>
+<td>标识符拆词算法，camelCase / snake_case / 全大写缩写自动切分（6.4）</td>
+</tr>
+<tr>
+<td>长句读不懂</td>
+<td>定语从句套三层，单词都认识但句子看不懂</td>
+<td>本地 NMT 整句翻译，术语约束解码保证专业词不被乱译（第 7 章）</td>
+</tr>
+<tr>
+<td>查完就忘</td>
+<td>查了 20 次同一个词</td>
+<td>一键入生词本 + 间隔重复复习（10.6）</td>
+</tr>
+</tbody>
+</table>
+<h3>1.4 核心能力清单</h3>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>能力</th>
+<th>优先级</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>离线查词</td>
+<td>P0</td>
+<td>输入即搜，支持精确、词形、前缀、模糊四级命中</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>中英双向</td>
+<td>P0</td>
+<td>英→中（主）、中→英（反向索引，支持中文关键词查英文对应词）</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>短语与搭配</td>
+<td>P0</td>
+<td>短语动词 <code>give up</code>、习语 <code>as a matter of fact</code>、技术搭配 <code>race condition</code></td>
+</tr>
+<tr>
+<td>C4</td>
+<td>词形还原</td>
+<td>P0</td>
+<td>复数、时态、比较级、派生词自动还原，用户无需自己变形</td>
+</tr>
+<tr>
+<td>C5</td>
+<td>源码标识符拆词</td>
+<td>P0</td>
+<td><code>parseHTTPResponse</code> → <code>parse</code> + <code>HTTP</code> + <code>Response</code> 逐段可查</td>
+</tr>
+<tr>
+<td>C6</td>
+<td>整句离线翻译</td>
+<td>P0</td>
+<td>英→中、中→英，单句 ≤ 60 词，端上推理，可取消；<strong>仅完整包可用</strong>，标准/轻量包降级为词条与短语级翻译</td>
+</tr>
+<tr>
+<td>C7</td>
+<td>划词取词</td>
+<td>P0</td>
+<td>任意 App 选中文本 → 系统菜单 → 词锋，回填翻译结果（<code>ACTION_PROCESS_TEXT</code>）</td>
+</tr>
+<tr>
+<td>C8</td>
+<td>发音</td>
+<td>P1</td>
+<td>IPA 音标必显；音频优先系统 TTS，无 TTS 引擎时降级为音标 + 音节划分</td>
+</tr>
+<tr>
+<td>C9</td>
+<td>生词本</td>
+<td>P1</td>
+<td>收藏、标签、掌握度、间隔重复复习、CSV 导出（可导入 AnkiDroid）</td>
+</tr>
+<tr>
+<td>C10</td>
+<td>历史与联想</td>
+<td>P1</td>
+<td>查询历史、热门前缀补全（按词频排序 Top 20）</td>
+</tr>
+<tr>
+<td>C11</td>
+<td>扩展词库</td>
+<td>P1</td>
+<td>L3 40 万词条作为独立包（约 60MB），用户从本地文件导入（无网络权限，不做在线下载）</td>
+</tr>
+<tr>
+<td>C12</td>
+<td>拍照/图片取词</td>
+<td>P2</td>
+<td>截图 OCR 取词，v1.1 评估（离线 OCR 模型体积较大）</td>
+</tr>
+</tbody>
+</table>
+<h3>1.5 明确不做的事（Non-Goals）</h3>
+<p>划清边界，防止范围失控：</p>
+<ul>
+<li>❌ <strong>不做在线词典兜底</strong>。一旦引入网络查询，"离线"就变成营销话术，且需要服务器成本与隐私政策升级。v1.0 应用<strong>不申请 INTERNET 权限</strong>，这是最强的产品承诺，也是最省事的合规方案。</li>
+<li>❌ <strong>不做例句语音库 / 真人发音包</strong>。版权与体积都不可控，v1.0 只有 IPA + 系统 TTS。</li>
+<li>❌ <strong>不做全文文档翻译（整篇 PDF/EPUB）</strong>。渲染与版式还原是无底洞，v2.0 再议。</li>
+<li>❌ <strong>不做背单词主线产品</strong>（词库课程、打卡、词汇量测试）。生词本只做"阅读的副产品"，不做学习 App。</li>
+<li>❌ <strong>不做账号与云同步</strong>。同步必然要联网，与定位冲突；导出 CSV 由用户自行迁移。</li>
+<li>❌ <strong>不做 iOS / 鸿蒙</strong>。技术栈为原生 Android，跨端需重写（v3.0 议题）。</li>
+</ul>
+<h3>1.6 用户画像与典型流程</h3>
+<p><strong>画像 A：后端工程师读官方文档</strong></p>
+<blockquote>
+<p>32 岁，英语六级，读 Kubernetes / Postgres 文档。认识 90% 的词，但每段都有 2～3 个卡词；不想为查词切换 App 打断思路。</p>
+</blockquote>
+<p><strong>画像 B：考研 / 专八备考学生读英文原版教材</strong></p>
+<blockquote>
+<p>22 岁，需要"这个词是不是专八词"的提示，边读边收生词本。</p>
+</blockquote>
+<p><strong>典型流程 1：主动查词</strong></p>
+<pre><code>① 点开词锋（冷启动 ≤ 400ms，直接落在搜索框，键盘已弹起）
+      ↓
+② 输入 &quot;idem&quot; → 第 3 个字符起联想列表实时刷新（每次 ≤ 8ms）
+      ↓
+③ 看到 &quot;idempotent  a. 幂等的&quot; → 点开词条页
+      ↓
+④ 词条页：音标 + 词性分组义项（技术义项置顶）+ 2 条技术例句 + 派生词 + 词频标签「专八」
+      ↓
+⑤ 点喇叭听发音；点☆加入生词本；左右滑动切上/下一个词
+</code></pre>
+<p><strong>典型流程 2：划词翻译（最高频）</strong></p>
+<pre><code>① 在 Chrome / 微信 / 任意 App 里长按选中 &quot;the request is idempotent&quot;
+      ↓
+② 系统文本选择菜单出现「词锋」→ 点击
+      ↓
+③ 词锋以半屏 BottomSheet 浮出，展示：
+     · 逐词释义（每个词可点开完整词条）
+     · 整句译文（NMT，约 0.8s，出字流式刷新）
+      ↓
+④ 下滑关闭，回到原 App，上下文不丢
+</code></pre>
+<h3>1.7 竞品对照与差异化</h3>
+<table>
+<thead>
+<tr>
+<th>产品</th>
+<th>离线能力</th>
+<th>专八词库</th>
+<th>技术术语</th>
+<th>划词</th>
+<th>体积</th>
+<th>主要短板</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>欧路词典</td>
+<td>支持导入 MDX</td>
+<td>需自备词库</td>
+<td>弱</td>
+<td>支持</td>
+<td>30MB+</td>
+<td>词库要自己找，配置门槛高</td>
+</tr>
+<tr>
+<td>深蓝词典</td>
+<td>支持 MDX</td>
+<td>需自备</td>
+<td>弱</td>
+<td>弱</td>
+<td>20MB+</td>
+<td>界面老旧，MDX 解析慢</td>
+</tr>
+<tr>
+<td>有道词典</td>
+<td>部分离线</td>
+<td>有</td>
+<td>中</td>
+<td>支持</td>
+<td>200MB+</td>
+<td>广告、信息流、强联网</td>
+</tr>
+<tr>
+<td>Google 翻译</td>
+<td>需先下载语言包</td>
+<td>无词条</td>
+<td>弱</td>
+<td>支持</td>
+<td>50MB+</td>
+<td>无词条释义，无词形还原</td>
+</tr>
+<tr>
+<td><strong>词锋 LexForge</strong></td>
+<td><strong>完全离线（无网络权限）</strong></td>
+<td><strong>内置 L1/L2</strong></td>
+<td><strong>L4 两万条</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>36MB 起（标准包）</strong></td>
+<td>无真人发音、无整篇翻译</td>
+</tr>
+</tbody>
+</table>
+<p><strong>差异化落点</strong>：别人做"万能词典"，我们做"读技术文档的那把手术刀"。三个护城河：<strong>检索延迟（毫秒级）</strong>、<strong>技术义项排序</strong>、<strong>源码标识符可查</strong>。</p>
+<hr>
+<h2 id="2-需求规格">2. 需求规格</h2>
+<h3>2.1 功能需求</h3>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>需求</th>
+<th>优先级</th>
+<th>验收要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FR-01</td>
+<td>应用启动后 1 秒内可输入</td>
+<td>P0</td>
+<td>冷启动到输入框可交互 ≤ 800ms（中端机）</td>
+</tr>
+<tr>
+<td>FR-02</td>
+<td>输入 ≥ 2 字符后实时联想</td>
+<td>P0</td>
+<td>每次按键到列表刷新 ≤ 30ms（含 60ms 防抖）</td>
+</tr>
+<tr>
+<td>FR-03</td>
+<td>精确查词</td>
+<td>P0</td>
+<td><code>run</code> 直接命中词条，1 次索引查找完成</td>
+</tr>
+<tr>
+<td>FR-04</td>
+<td>词形还原查词</td>
+<td>P0</td>
+<td><code>running/ran/runs</code> 均命中 <code>run</code>，并在词条页标注"原形 run"</td>
+</tr>
+<tr>
+<td>FR-05</td>
+<td>派生词查词</td>
+<td>P0</td>
+<td><code>unbelievable</code> 未收录时回退 <code>believable</code> / <code>believe</code>，提示"未收录，可能是 X 的派生"</td>
+</tr>
+<tr>
+<td>FR-06</td>
+<td>前缀联想排序</td>
+<td>P0</td>
+<td>按词频降序，最多 20 条，每条显示"词 + 词性 + 首义项（截断 20 字）"</td>
+</tr>
+<tr>
+<td>FR-07</td>
+<td>拼写纠错</td>
+<td>P0</td>
+<td>编辑距离 ≤2 时给出"你是不是想查…"，Top 3 候选</td>
+</tr>
+<tr>
+<td>FR-08</td>
+<td>短语查询</td>
+<td>P0</td>
+<td>连续输入含空格时优先整串匹配短语表，命中则短语词条置顶</td>
+</tr>
+<tr>
+<td>FR-09</td>
+<td>标识符拆词</td>
+<td>P0</td>
+<td>输入 <code>getUserById</code> 自动切分并逐段给出释义</td>
+</tr>
+<tr>
+<td>FR-10</td>
+<td>中文查英文</td>
+<td>P0</td>
+<td>输入"幂等"返回 <code>idempotent</code> 等候选，按词频排序</td>
+</tr>
+<tr>
+<td>FR-11</td>
+<td>词条详情</td>
+<td>P0</td>
+<td>头词、音标（英/美）、词性分组、义项编号、例句、派生词、词频标签</td>
+</tr>
+<tr>
+<td>FR-12</td>
+<td>例句展示</td>
+<td>P0</td>
+<td>每个主要义项至少 1 条例句；技术词优先技术例句</td>
+</tr>
+<tr>
+<td>FR-13</td>
+<td>整句翻译</td>
+<td>P0</td>
+<td>≤60 词英文句，输出中文译文，P95 ≤ 1.5s，可中途取消；完整包实测，标准包下该入口隐藏并提示"需完整包"</td>
+</tr>
+<tr>
+<td>FR-14</td>
+<td>中文→英文翻译</td>
+<td>P1</td>
+<td>≤60 字中文句，输出英文</td>
+</tr>
+<tr>
+<td>FR-15</td>
+<td>划词取词</td>
+<td>P0</td>
+<td>任意 App 选中文本 → 菜单「词锋」→ 半屏结果页，返回后原 App 状态不丢</td>
+</tr>
+<tr>
+<td>FR-16</td>
+<td>分享接收</td>
+<td>P1</td>
+<td>系统分享文本到词锋，直接进入查询</td>
+</tr>
+<tr>
+<td>FR-17</td>
+<td>发音</td>
+<td>P1</td>
+<td>点击播报；无 TTS 引擎时 Toast 提示并只显示音标</td>
+</tr>
+<tr>
+<td>FR-18</td>
+<td>生词本</td>
+<td>P1</td>
+<td>收藏/取消收藏，本地持久化，支持标签与删除</td>
+</tr>
+<tr>
+<td>FR-19</td>
+<td>复习</td>
+<td>P2</td>
+<td>基于 SM-2 简化版安排复习队列</td>
+</tr>
+<tr>
+<td>FR-20</td>
+<td>查询历史</td>
+<td>P1</td>
+<td>保留最近 500 条，可单条删除、全部清空</td>
+</tr>
+<tr>
+<td>FR-21</td>
+<td>深色模式</td>
+<td>P1</td>
+<td>跟随系统 + 手动三态（跟随/浅色/深色）</td>
+</tr>
+<tr>
+<td>FR-22</td>
+<td>字号调节</td>
+<td>P1</td>
+<td>4 档（小/标准/大/超大），影响词条正文字号</td>
+</tr>
+<tr>
+<td>FR-23</td>
+<td>扩展词库安装</td>
+<td>P1</td>
+<td>从本地文件（.lexd）导入，校验签名与版本，失败可回滚</td>
+</tr>
+<tr>
+<td>FR-24</td>
+<td>生词本导出</td>
+<td>P1</td>
+<td>导出 CSV（UTF-8 with BOM，Excel 可直接打开）</td>
+</tr>
+<tr>
+<td>FR-25</td>
+<td>无网络可用</td>
+<td>P0</td>
+<td>飞行模式下全功能可用；应用不声明 INTERNET 权限</td>
+</tr>
+<tr>
+<td>FR-26</td>
+<td>首次启动引导</td>
+<td>P2</td>
+<td>3 屏图文说明，可跳过</td>
+</tr>
+<tr>
+<td>FR-27</td>
+<td>崩溃自愈</td>
+<td>P0</td>
+<td>索引文件校验失败时自动重建缓存，不白屏</td>
+</tr>
+<tr>
+<td>FR-28</td>
+<td>查询无结果兜底</td>
+<td>P0</td>
+<td>明确提示"未收录"，并提供拆词结果 + 整句翻译入口</td>
+</tr>
+</tbody>
+</table>
+<h3>2.2 非功能需求</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>指标</th>
+<th>目标值</th>
+<th>测量方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>启动</td>
+<td>冷启动到首帧</td>
+<td>≤ 400ms（P95）</td>
+<td>Macrobenchmark <code>StartupTimingMetric</code></td>
+</tr>
+<tr>
+<td>启动</td>
+<td>冷启动到输入可交互</td>
+<td>≤ 800ms（P95）</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>查词</td>
+<td>单次精确查询</td>
+<td>≤ 8ms（P95） / ≤ 20ms（P99）</td>
+<td>内核微基准（10 万次采样）</td>
+</tr>
+<tr>
+<td>查词</td>
+<td>输入联想刷新</td>
+<td>≤ 30ms（P95）</td>
+<td>同上 + 真机 trace</td>
+</tr>
+<tr>
+<td>翻译</td>
+<td>20 词句英→中</td>
+<td>≤ 900ms（P95）</td>
+<td>端上实测，含分词与解码</td>
+</tr>
+<tr>
+<td>翻译</td>
+<td>60 词句英→中</td>
+<td>≤ 1.8s（P95）</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>内存</td>
+<td>查词页常驻 PSS</td>
+<td>≤ 120MB</td>
+<td><code>dumpsys meminfo</code></td>
+</tr>
+<tr>
+<td>内存</td>
+<td>翻译峰值 PSS</td>
+<td>≤ 260MB</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>体积</td>
+<td>标准包（arm64，含词库，不含翻译模型）</td>
+<td>≤ 45MB（目标 36MB）</td>
+<td><code>apkanalyzer apk size</code></td>
+</tr>
+<tr>
+<td>体积</td>
+<td>完整包（含 en→zh 模型）</td>
+<td>≤ 125MB（目标 118MB）</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>体积</td>
+<td>轻量包（仅 L1+L4）</td>
+<td>≤ 22MB</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>能耗</td>
+<td>连续查词 30 分钟</td>
+<td>耗电 ≤ 4%（4000mAh）</td>
+<td>Battery Historian</td>
+</tr>
+<tr>
+<td>兼容</td>
+<td>最低系统</td>
+<td>API 26（Android 8.0）</td>
+<td>设备矩阵</td>
+</tr>
+<tr>
+<td>兼容</td>
+<td>页面渲染</td>
+<td>320dp～840dp 宽，含折叠屏/平板</td>
+<td>布局检查</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td>无崩溃率</td>
+<td>≥ 99.5%（Session）</td>
+<td>本地日志统计 / 用户反馈</td>
+</tr>
+<tr>
+<td>无障碍</td>
+<td>TalkBack</td>
+<td>全部控件可聚焦、可朗读</td>
+<td>手动走查</td>
+</tr>
+<tr>
+<td>隐私</td>
+<td>网络权限</td>
+<td>0 个</td>
+<td><code>aapt dump permissions</code></td>
+</tr>
+</tbody>
+</table>
+<h3>2.3 词汇覆盖度：定义、分级与验收</h3>
+<p>这是本项目最容易被含糊过去的地方，必须量化。</p>
+<p><strong>（1）分级策略</strong></p>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>内容</th>
+<th>词条数</th>
+<th>体积（压缩后）</th>
+<th>分发方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td>专八核心高频词（含全部 CET-4/6 与考研词）</td>
+<td>8,000</td>
+<td>≈ 7MB</td>
+<td>内置</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>专八全量（L1 + 其余专八大纲词）</td>
+<td>13,000</td>
+<td>≈ 11MB</td>
+<td>内置</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>扩展通用词库（ECDICT 精选，含 GRE/TOEFL 及常用派生）</td>
+<td>400,000</td>
+<td>≈ 60MB</td>
+<td>本地文件导入（侧载）</td>
+</tr>
+<tr>
+<td>L4</td>
+<td>技术术语与惯用译法</td>
+<td>20,000</td>
+<td>≈ 4MB</td>
+<td>内置</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>说明</strong>：专八（TEM-8）考试大纲要求认知词汇约 13,000 个，其中熟练运用约 8,000 个。本项目的 L2 即按此口径构建，L1 取其中词频最高的 8,000 条用于"高频优先"排序与复习队列筛选。</p>
+</blockquote>
+<p><strong>（2）覆盖度指标</strong></p>
+<p>设测试语料 $T$ 共 $N$ 个 token，其中能被词库直接解释（精确命中 lemma）的为 $N_{hit}$，经词形还原/派生剥离/标识符拆词后能解释的为 $N_{norm}$，则：</p>
+<ul>
+<li>直接覆盖率 $C_{raw} = N_{hit} / N$</li>
+<li>有效覆盖率 $C_{eff} = N_{norm} / N$ ← <strong>验收以此为准</strong></li>
+</ul>
+<p><strong>（3）验收阈值与测算语料</strong></p>
+<table>
+<thead>
+<tr>
+<th>语料集</th>
+<th>规模</th>
+<th>用途</th>
+<th>目标 $C_{eff}$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>通用英文新闻（公开语料抽样）</td>
+<td>2M token</td>
+<td>基线校验</td>
+<td>≥ 98.5%</td>
+</tr>
+<tr>
+<td>技术文档集（MDN / Kubernetes / PostgreSQL / Python 官方文档抽样）</td>
+<td>3M token</td>
+<td>主验收集</td>
+<td>≥ 98.0%</td>
+</tr>
+<tr>
+<td>源码注释集（GitHub Top 500 仓库注释抽样）</td>
+<td>1M token</td>
+<td>边界场景</td>
+<td>≥ 96.0%</td>
+</tr>
+<tr>
+<td>论文摘要集（arXiv cs 分类抽样）</td>
+<td>1M token</td>
+<td>边界场景</td>
+<td>≥ 96.5%</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>达不到 98% 的部分，<strong>80% 会集中在专有名词（库名、协议名、产品名）与复合新词</strong>。对策：① L4 术语表补足工程高频词；② 专有名词识别后不强行翻译，直接原样保留并标注"专有名词"；③ 报告明细，按词频导出 Top 500 未覆盖词作为下一版补词清单。</p>
+</blockquote>
+<p><strong>（4）测算方法（可执行）</strong></p>
+<pre><code class="language-bash"># 1) 语料清洗：去代码块、去 URL、统一小写、保留原始 token 以便回溯
+python tools/coverage.py corpus/ --strip-code --out build/coverage_norm.txt
+
+# 2) 逐 token 判定
+#    命中顺序与线上检索内核完全一致，避免&quot;离线测算好看、线上查不到&quot;
+python tools/coverage.py --dict build/lexd/L2.lexd \
+                          --glossary build/lexd/L4.lexd \
+                          --lemma --deriv --identifier \
+                          --report build/coverage_report.csv
+
+# 3) 输出
+#    totals: tokens=3,102,441  raw=91.3%  eff=98.24%  oov_unique=11,904
+#    build/coverage_report.csv 列: token, freq, hit_stage, suggestion
+</code></pre>
+<h3>2.4 验收标准样例（Given / When / Then）</h3>
+<table>
+<thead>
+<tr>
+<th>用例</th>
+<th>Given</th>
+<th>When</th>
+<th>Then</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AC-01</td>
+<td>飞行模式，全新安装</td>
+<td>输入 <code>idempotent</code> 并确认</td>
+<td>300ms 内展示词条，含音标、技术义项"幂等的"、至少 1 条例句</td>
+</tr>
+<tr>
+<td>AC-02</td>
+<td>同上</td>
+<td>输入 <code>deprecated</code></td>
+<td>命中 <code>deprecate</code>，词条页顶部提示"deprecated 是 deprecate 的过去式/过去分词"</td>
+</tr>
+<tr>
+<td>AC-03</td>
+<td>同上</td>
+<td>输入 <code>parseHTTPResponse</code></td>
+<td>展示 3 段拆词结果：<code>parse</code> / <code>HTTP</code> / <code>Response</code>，每段可点开</td>
+</tr>
+<tr>
+<td>AC-04</td>
+<td>同上</td>
+<td>输入 <code>idempotnet</code></td>
+<td>提示"你是不是想查：idempotent"，且候选可点击直达</td>
+</tr>
+<tr>
+<td>AC-05</td>
+<td>同上</td>
+<td>输入"幂等"</td>
+<td>首条结果为 <code>idempotent</code></td>
+</tr>
+<tr>
+<td>AC-06</td>
+<td>同上</td>
+<td>对 20 词英文句点"翻译"</td>
+<td>1.2s 内出完整中文译文，句中断网无影响</td>
+</tr>
+<tr>
+<td>AC-07</td>
+<td>任意阅读类 App</td>
+<td>选中一句话，菜单选「词锋」</td>
+<td>半屏浮出，显示逐词释义与整句译文；返回后原 App 位置不变</td>
+</tr>
+<tr>
+<td>AC-08</td>
+<td>已收藏 20 个词</td>
+<td>进入生词本</td>
+<td>按收藏时间倒序展示，可搜索、可删除、可导出 CSV</td>
+</tr>
+<tr>
+<td>AC-09</td>
+<td>强制杀掉进程再启动</td>
+<td>冷启动</td>
+<td>≤ 800ms 可输入，无白屏，索引校验 ≤ 50ms</td>
+</tr>
+<tr>
+<td>AC-10</td>
+<td>手动损坏 L2.lexd 尾部 4 字节</td>
+<td>启动查词</td>
+<td>检测到校验失败，提示"词库损坏，正在重建"，并降级到 L1 可用</td>
+</tr>
+</tbody>
+</table>
+<h3>2.5 版本节奏</h3>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>范围</th>
+<th>目标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v1.0</td>
+<td>C1–C8、C10 核心；L1+L2+L4 内置</td>
+<td>可日常使用的完整产品</td>
+</tr>
+<tr>
+<td>v1.1</td>
+<td>C11 扩展词库、C9 生词本复习、C12 OCR 取词</td>
+<td>提升留存</td>
+</tr>
+<tr>
+<td>v1.5</td>
+<td>中→英质量优化、整段多句翻译</td>
+<td>覆盖写作场景</td>
+</tr>
+<tr>
+<td>v2.0</td>
+<td>整篇文档模式（PDF/EPUB 内嵌查词）、术语库自定义</td>
+<td>场景延伸</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="3-总体架构">3. 总体架构</h2>
+<h3>3.1 分层架构</h3>
+<pre><code>┌──────────────────────────────────────────────────────────────┐
+│  表现层 (Compose UI)                                          │
+│  SearchScreen  EntryScreen  TranslateSheet  NotebookScreen     │
+│  ProcessTextActivity（划词）  SettingsScreen                   │
+└───────────────────────────┬──────────────────────────────────┘
+                            │ UiState / Intent（单向数据流）
+┌───────────────────────────▼──────────────────────────────────┐
+│  领域层 (domain)                                              │
+│  LookupUseCase   TranslateUseCase   NotebookUseCase            │
+│  QueryNormalizer  QueryPlanner（决策：走哪几级检索）            │
+└───────────────────────────┬──────────────────────────────────┘
+                            │
+┌───────────────────────────▼──────────────────────────────────┐
+│  数据层 (data)                                                │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐          │
+│  │ LexiconStore │ │  Lemmatizer  │ │ Translator   │          │
+│  │ (mmap 词典包) │ │ (规则+不规则) │ │ (ORT + SP)   │          │
+│  └──────┬───────┘ └──────────────┘ └──────┬───────┘          │
+│         │                                  │                  │
+│  ┌──────▼───────┐ ┌──────────────┐ ┌──────▼───────┐          │
+│  │ LEXD Reader  │ │ FuzzyIndex   │ │ ModelManager │          │
+│  │ 前压缩块索引  │ │ (SymSpell)   │ │ 模型/词表管理 │          │
+│  └──────┬───────┘ └──────┬───────┘ └──────────────┘          │
+└─────────┼─────────────────┼──────────────────────────────────┘
+          │                 │
+     assets/*.lexd     SQLite（FTS5 全文 + 生词本 + 历史）
+</code></pre>
+<p><strong>三条硬规则</strong>：</p>
+<ol>
+<li><strong>词典只读</strong>。<code>.lexd</code> 打包进 APK assets，永不写入，用 mmap 直读；用户数据（生词本、历史、设置）走 SQLite。</li>
+<li><strong>查词不上线程池排队</strong>。单次查询是纯 CPU 的短任务（微秒~毫秒级），在 <code>Dispatchers.Default</code> 上直接跑，不做任务队列，避免调度开销。</li>
+<li><strong>翻译才用协程 + 可取消</strong>。NMT 是百毫秒级任务，必须有 Job 取消、进度回调与内存上限。</li>
+</ol>
+<h3>3.2 模块划分</h3>
+<pre><code>lexforge/
+├── app/                         # 壳工程：Application、导航、DI 装配
+├── core/
+│   ├── model/                   # 纯 Kotlin 数据模型（Entry, Sense, Phrase...）
+│   ├── dict/                    # LEXD 读取器、索引、mmap、缓存
+│   ├── search/                  # 归一化、QueryPlanner、五级检索、SymSpell
+│   ├── morph/                   # 词形还原、派生剥离、标识符拆词
+│   ├── mt/                      # ONNX Runtime 封装、SentencePiece、分句
+│   └── datastore/               # SQLite（生词本/历史）+ DataStore（设置）
+├── feature/
+│   ├── search/                  # 搜索页 + 词条页
+│   ├── translate/               # 翻译 BottomSheet
+│   ├── notebook/                # 生词本 + 复习
+│   └── settings/                # 设置
+├── build-logic/                 # 约定插件（版本目录统一）
+└── tools/                       # Python 词库构建流水线（不进 APK）
+</code></pre>
+<p>模块依赖方向严格单向：<code>feature → core</code>，<code>core</code> 之间不允许循环；<code>core:dict</code> 不依赖 Android 框架（纯 JVM + 一个 <code>AssetSource</code> 接口），以便在 PC 上跑单测与基准。</p>
+<h3>3.3 查词主链路时序</h3>
+<pre><code>UI          ViewModel        UseCase         Normalizer      LexiconStore      Lemmatizer
+ │  key &quot;run&quot;   │               │                │               │                │
+ ├─────────────►│               │                │               │                │
+ │              ├── debounce 60ms│               │               │                │
+ │              ├──────────────►│                │               │                │
+ │              │               ├───normalize───►│                │                │
+ │              │               │◄──&quot;run&quot;────────┤                │                │
+ │              │               ├──exact lookup──────────────────►│                │
+ │              │               │◄──Entry? ───────────────────────┤                │
+ │              │               │  (miss)        │                │                │
+ │              │               ├──lemma candidates───────────────────────────────►│
+ │              │               │◄──[&quot;run&quot;,&quot;runn&quot;]─────────────────────────────────┤
+ │              │               ├──retry lookup───────────────────►│                │
+ │              │               │◄──Entry ────────────────────────┤                │
+ │◄──UiState────┤               │                │               │                │
+ │  render 3ms  │               │                │               │                │
+</code></pre>
+<p>总预算分解（单位 ms，P95）：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>精确命中</th>
+<th>需还原</th>
+<th>需模糊</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>防抖</td>
+<td>60（可配 0～120）</td>
+<td>60</td>
+<td>60</td>
+</tr>
+<tr>
+<td>归一化</td>
+<td>0.05</td>
+<td>0.05</td>
+<td>0.05</td>
+</tr>
+<tr>
+<td>索引查找</td>
+<td>0.6</td>
+<td>0.6 × 2</td>
+<td>0.6 + 1.8</td>
+</tr>
+<tr>
+<td>块解压（zstd，32 条/块）</td>
+<td>1.2</td>
+<td>2.4</td>
+<td>4.0</td>
+</tr>
+<tr>
+<td>JSON 反序列化</td>
+<td>1.0</td>
+<td>2.0</td>
+<td>3.0</td>
+</tr>
+<tr>
+<td>渲染</td>
+<td>3.0</td>
+<td>3.0</td>
+<td>3.0</td>
+</tr>
+<tr>
+<td><strong>合计（不含防抖）</strong></td>
+<td><strong>≈ 5.9</strong></td>
+<td><strong>≈ 8.1</strong></td>
+<td><strong>≈ 12.5</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>3.4 线程与并发模型</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>调度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入联想</td>
+<td><code>Dispatchers.Default</code>，<code>flatMapLatest</code></td>
+<td>新输入自动取消上一次，天然防抖</td>
+</tr>
+<tr>
+<td>词条详情加载</td>
+<td>同上</td>
+<td>词条已随联想结果返回摘要，详情页只补例句</td>
+</tr>
+<tr>
+<td>翻译</td>
+<td><code>Dispatchers.Default</code>（ORT 内部再开线程）</td>
+<td>ORT <code>intra_op_num_threads = min(4, cores/2)</code></td>
+</tr>
+<tr>
+<td>词库安装/校验</td>
+<td><code>Dispatchers.IO</code></td>
+<td>大文件 IO，带进度回调</td>
+</tr>
+<tr>
+<td>数据库写</td>
+<td><code>Dispatchers.IO</code> + 单写队列</td>
+<td>生词本写入频繁但量小，串行即可</td>
+</tr>
+</tbody>
+</table>
+<p><strong>加锁策略</strong>：<code>LexiconStore</code> 内部所有结构不可变（构建期定型），因此<strong>读路径完全无锁</strong>；只有"扩展词库挂载/卸载"时需要 <code>StampedLock</code> 写锁保护引用替换，读侧用乐观读。</p>
+<h3>3.5 关键设计决策（ADR 摘要）</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>决策</th>
+<th>备选方案</th>
+<th>结论与理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ADR-1</td>
+<td>自研 LEXD 二进制包 + mmap，而非纯 SQLite</td>
+<td>SQLite 单表查词</td>
+<td>SQLite 每次查询要过 B-Tree + 页缓存，实测 P95 约 3～8ms，且首查有 IO 抖动；自研前压缩索引 + zstd 块可做到 0.6ms，且体积小 30%</td>
+</tr>
+<tr>
+<td>ADR-2</td>
+<td>词条内容用 zstd 压缩块，非平铺 JSON</td>
+<td>明文 JSON</td>
+<td>明文 13k 词条约 45MB，压缩后 11MB；mmap + 按块解压兼顾体积与速度</td>
+</tr>
+<tr>
+<td>ADR-3</td>
+<td>Kotlin + Compose，非 Flutter</td>
+<td>Flutter</td>
+<td>需要 mmap/直接文件描述符/NDK 级集成，Flutter 走 platform channel 反而更绕；Compose 冷启动经 Baseline Profile 可压到 400ms 内</td>
+</tr>
+<tr>
+<td>ADR-4</td>
+<td>ONNX Runtime Mobile + opus-mt，非 ML Kit 翻译</td>
+<td>ML Kit On-Device Translation</td>
+<td>ML Kit 首次使用需从 Play 下载 ~30MB 模型，且依赖 GMS，违背"装完即离线"；ORT 方案模型随包，完全自持</td>
+</tr>
+<tr>
+<td>ADR-5</td>
+<td>无 INTERNET 权限</td>
+<td>保留权限做"可选增强"</td>
+<td>少一个权限 = 少一类合规问题 + 一个可对外宣传的硬承诺；扩展词库走本地文件导入而非在线下载</td>
+</tr>
+<tr>
+<td>ADR-6</td>
+<td>词典包与代码分离版本号</td>
+<td>单一版本</td>
+<td>词库可独立迭代（补词、修错），不必为改 3 个词条发版；<code>packVersion</code> 与 <code>appVersion</code> 解耦</td>
+</tr>
+<tr>
+<td>---</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-词库数据工程">4. 词库数据工程</h2>
+<p>词库质量决定产品生死。这一章说明数据从哪来、怎么洗、怎么打包、怎么验收。</p>
+<h3>4.1 数据源与授权矩阵</h3>
+<blockquote>
+<p><strong>红线</strong>：本项目分发 APK（非开源项目），任何 <strong>GPL / CC-BY-NC / 未声明许可</strong> 的数据或代码都不得进入产物。以下结论须由法务复核后签字，见 12.6。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>数据源</th>
+<th>规模</th>
+<th>许可</th>
+<th>风险</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>英汉词条主体</td>
+<td>ECDICT（skywind3000）</td>
+<td>≈77 万词条</td>
+<td>MIT（代码）/ 数据为多源聚合</td>
+<td>部分字段来源需确认；<code>bnc</code>/<code>frq</code> 词频列建议不直接作为发行数据</td>
+<td><strong>采用</strong>，仅用释义/音标/词性/标签字段</td>
+</tr>
+<tr>
+<td>专八词表</td>
+<td>公开考试大纲词表 + ECDICT 标签交叉</td>
+<td>13,000</td>
+<td>大纲词表本身不受版权保护（事实性清单）</td>
+<td>需人工校对</td>
+<td><strong>自建</strong>（4.4）</td>
+</tr>
+<tr>
+<td>中文→英反向</td>
+<td>由英汉词条释义反向构建</td>
+<td>派生</td>
+<td>本项目派生数据</td>
+<td>—</td>
+<td><strong>自建</strong>（4.6）</td>
+</tr>
+<tr>
+<td>技术术语</td>
+<td>自建术语表 + Wiktionary 术语页校对</td>
+<td>20,000</td>
+<td>自建部分自有；Wiktionary 为 CC BY-SA</td>
+<td>SA 具有传染性</td>
+<td><strong>自建为主</strong>，Wiktionary 仅作事实核查，不复制文本</td>
+</tr>
+<tr>
+<td>例句</td>
+<td>自建技术语料改写 + Tatoeba（CC BY 2.0 FR）</td>
+<td>5 万句</td>
+<td>Tatoeba 需署名</td>
+<td>署名页可满足</td>
+<td><strong>采用 Tatoeba，附署名页</strong></td>
+</tr>
+<tr>
+<td>词频排序</td>
+<td>wordfreq（Apache-2.0）</td>
+<td>全量</td>
+<td>Apache-2.0</td>
+<td>低</td>
+<td><strong>采用</strong></td>
+</tr>
+<tr>
+<td>词形/不规则表</td>
+<td>自建 + WordNet morphy 规则参考</td>
+<td>3,000</td>
+<td>WordNet 许可宽松</td>
+<td>低</td>
+<td><strong>采用规则，表自建</strong></td>
+</tr>
+<tr>
+<td>翻译模型</td>
+<td>Helsinki-NLP/opus-mt-en-zh、opus-mt-zh-en</td>
+<td>77M 参数</td>
+<td>CC BY 4.0</td>
+<td>需署名</td>
+<td><strong>采用</strong>，附模型卡署名</td>
+</tr>
+<tr>
+<td>备选翻译模型</td>
+<td>m2m100-418M</td>
+<td>418M</td>
+<td>MIT</td>
+<td>体积大</td>
+<td>备选（质量兜底）</td>
+</tr>
+<tr>
+<td>排除</td>
+<td>NLLB-200</td>
+<td>600M</td>
+<td><strong>CC BY-NC 4.0</strong></td>
+<td>禁商用</td>
+<td>❌ 不用</td>
+</tr>
+<tr>
+<td>排除</td>
+<td>CC-CEDICT</td>
+<td>12 万</td>
+<td><strong>CC BY-SA 4.0</strong></td>
+<td>SA 传染全文数据</td>
+<td>❌ 不并入主库，如需单独扩展包须法务评估</td>
+</tr>
+<tr>
+<td>排除</td>
+<td>espeak-ng</td>
+<td>—</td>
+<td><strong>GPLv3</strong></td>
+<td>链接即传染</td>
+<td>❌ 不用，改用系统 TTS</td>
+</tr>
+<tr>
+<td>中文分词（构建期）</td>
+<td>jieba（MIT）</td>
+<td>—</td>
+<td>MIT</td>
+<td>仅构建期使用，不进 APK</td>
+<td>采用</td>
+</tr>
+</tbody>
+</table>
+<h3>4.2 词条字段模型</h3>
+<pre><code class="language-jsonc">{
+  &quot;id&quot;: 10237,                      // 全局唯一，构建期分配，稳定不变
+  &quot;hw&quot;: &quot;idempotent&quot;,               // headword，小写，检索键
+  &quot;disp&quot;: &quot;idempotent&quot;,             // 展示用大小写（如 &quot;HTTP&quot;、&quot;iPhone&quot;）
+  &quot;ipa&quot;: { &quot;uk&quot;: &quot;ˌaɪdəmˈpəʊtənt&quot;, &quot;us&quot;: &quot;ˌaɪdəmˈpoʊtnt&quot; },
+  &quot;pos&quot;: [                          // 词性分组，顺序即展示顺序
+    {
+      &quot;p&quot;: &quot;adj.&quot;,
+      &quot;senses&quot;: [
+        { &quot;d&quot;: &quot;（计算）幂等的：多次执行与一次执行结果相同的&quot;,
+          &quot;tag&quot;: &quot;tech&quot;, &quot;pri&quot;: 1 },
+        { &quot;d&quot;: &quot;（数学）幂等的&quot;, &quot;tag&quot;: &quot;math&quot;, &quot;pri&quot;: 2 },
+        { &quot;d&quot;: &quot;（罕）同一的；相同的&quot;, &quot;tag&quot;: &quot;rare&quot;, &quot;pri&quot;: 9 }
+      ]
+    }
+  ],
+  &quot;ex&quot;: [                           // 例句，tech 语域优先
+    { &quot;en&quot;: &quot;PUT is idempotent, so retrying the request is safe.&quot;,
+      &quot;zh&quot;: &quot;PUT 是幂等的，因此重试该请求是安全的。&quot;,
+      &quot;src&quot;: &quot;self&quot; }
+  ],
+  &quot;forms&quot;: [&quot;idempotently&quot;],        // 该词的派生/变形，供反向查找
+  &quot;deriv&quot;: { &quot;base&quot;: null, &quot;suffix&quot;: null },
+  &quot;freq&quot;: 18234,                    // 词频排名（越小越常用）
+  &quot;level&quot;: [&quot;L2&quot;, &quot;tem8&quot;, &quot;gre&quot;],   // 分级标签
+  &quot;gloss&quot;: [&quot;幂等&quot;]                  // 中文关键词，供中→英检索（构建期生成）
+}
+</code></pre>
+<p><strong>字段裁剪原则</strong>：为控制体积，<code>ex</code> 每词最多 3 条，<code>senses</code> 每词最多 8 条，<code>gloss</code> 最多 4 个；超出部分在构建期截断并记录到报告，避免"某个词 4KB 拖慢整包"。</p>
+<h3>4.3 数据清洗流水线</h3>
+<pre><code>raw/ECDICT.csv
+   │ ① 加载与字段映射（stardict CSV → 内部 schema）
+   ▼
+② 头词规范化：小写化、去首尾空格、全角转半角、去 BOM
+   │     冲突处理：大小写同形（HTTP/http、US/us）合并为一条，
+   │     以大写形式作 disp，另存别名表
+   ▼
+③ 音标统一：剥离多种标注体系差异（'、&quot;、ˈ、ˌ 归一），缺失则留空
+   ▼
+④ 词性归一：n./v./adj./adv./prep./conj./pron./num./art./int./aux./phr.
+   │     丢弃无法归一的脏词性（如 &quot;n.&amp;v.&quot; 拆成两条）
+   ▼
+⑤ 义项切分与排序：按 `\n` 与 `；` 切分 → 去空 → 按 pos 分组 →
+   │     技术词（有 tech 标记）置 pri=1
+   ▼
+⑥ 例句入库：按词形匹配 + 长度过滤（8～25 词）+ 去重
+   ▼
+⑦ 词频与分级：wordfreq 取 zipf 值 → 排名 → 打 L1/L2/L3 与 tem4/tem8 标签
+   ▼
+⑧ 敏感内容过滤：粗俗/歧视性词条保留但标注 `flag: restricted`，首屏不展示例句
+   ▼
+build/normalized/*.jsonl  → 供 LEXD 打包器使用
+</code></pre>
+<p><strong>校验规则（构建期硬失败）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>校验项</th>
+<th>规则</th>
+<th>失败处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>头词唯一</td>
+<td><code>hw</code> 全局唯一</td>
+<td>后者合并进前者义项</td>
+</tr>
+<tr>
+<td>头词字符集</td>
+<td>仅 <code>[a-z0-9 '\-.&amp;/()]</code> 与合法扩展字母</td>
+<td>丢弃并记入 <code>reject.log</code></td>
+</tr>
+<tr>
+<td>空义项</td>
+<td>每个词至少 1 个非空义项</td>
+<td>丢弃该词</td>
+</tr>
+<tr>
+<td>音标格式</td>
+<td>匹配 <code>^[a-zɑɒæəɜɪʊʌθðʃʒŋˈˌː()\s-]*$</code></td>
+<td>置空</td>
+</tr>
+<tr>
+<td>例句长度</td>
+<td>4～40 token</td>
+<td>超长截断或丢弃</td>
+</tr>
+<tr>
+<td>词频缺失</td>
+<td><code>freq</code> 为空时置 999999（排最后）</td>
+<td>不失败</td>
+</tr>
+</tbody>
+</table>
+<p>预计丢弃率 3%～6%，属正常（多为缩写变体、复合词残片）。</p>
+<h3>4.4 专八分级表的构建</h3>
+<p>专八（TEM-8）没有官方开放的机读词表，必须自建，做法是<strong>三源交叉 + 人工抽检</strong>：</p>
+<ol>
+<li><strong>来源 A：公开大纲词表</strong>。收集可获取的 TEM-4/TEM-8 词汇表（按词形去重），得到约 13,000 条候选。</li>
+<li><strong>来源 B：ECDICT 标签</strong>。ECDICT 的 <code>tag</code> 字段覆盖 <code>zk/gk/cet4/cet6/ky/toefl/ielts/gre</code> 等考试标签，但 <strong>TEM-4/TEM-8 标签在其主库中并不完整</strong>，因此<strong>不能</strong>直接用标签当专八表，只能用于校验：一个词若同时带 <code>cet4</code> 标签却不在专八表中，需要复核（专八表本就包含四级词）。</li>
+<li><strong>来源 C：词频约束</strong>。用 wordfreq 的 zipf 值排序，检查分布合理性：专八 13,000 词应大致覆盖 zipf ≥ 3.2 的区间；若某个 zipf &lt; 2.5 的冷僻词被标为"专八核心"，多半是词表错误。</li>
+</ol>
+<p><strong>人工抽检</strong>：按 5% 随机抽样（650 条）双人标注"应属专八 / 不应属 / 存疑"，不一致率 &gt; 3% 则回到规则层修正。抽检结果与脚本一起版本化，后续补词必须过同一套检查。</p>
+<p><strong>产出</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tem8_verified.tsv</code></td>
+<td>13,000 条，列：headword / level(L1L2) / zipf / source / verified</td>
+</tr>
+<tr>
+<td><code>tem8_rejected.tsv</code></td>
+<td>剔除条目及原因，供追溯</td>
+</tr>
+<tr>
+<td><code>level_map.json</code></td>
+<td>headword → level 数组，打包时写入词条</td>
+</tr>
+</tbody>
+</table>
+<h3>4.5 词形与派生</h3>
+<p>词形数据分三部分，全部在构建期预生成（运行时不查规则表）：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>规模</th>
+<th>存储位置</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>屈折变形</td>
+<td>≈ 45,000 条（13k × 3.5）</td>
+<td><code>FORMS</code> 段：<code>form → lemmaId</code></td>
+<td><code>running → run</code></td>
+</tr>
+<tr>
+<td>不规则变化</td>
+<td>3,012 条</td>
+<td>随 <code>FORMS</code> 段，权重更高</td>
+<td><code>went → go</code>、<code>children → child</code></td>
+</tr>
+<tr>
+<td>派生词</td>
+<td>≈ 28,000 条</td>
+<td><code>DERIV</code> 段：<code>derived → baseId + affix</code></td>
+<td><code>unbelievable → believable</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么预生成</strong>：运行时用 Porter 词干算法猜原形，会出现 <code>running → runn</code>、<code>better → bett</code> 这类错配，还会把 <code>series</code> 误还原成 <code>sery</code>。预生成表是"确定性的正确答案"，体积代价（约 1.8MB 压缩后）完全值得。</p>
+<p>不规则的规则细节见 6.1 / 6.2。</p>
+<h3>4.6 中文反向索引（中 → 英）</h3>
+<p>目标：输入"幂等"能查到 <code>idempotent</code>；输入"漏洞"能查到 <code>vulnerability</code>、<code>bug</code>、<code>flaw</code>。</p>
+<p><strong>构建步骤</strong>：</p>
+<pre><code>英汉义项文本
+   │ ① 用 jieba 分词（构建期，MIT 许可）
+   ▼
+② 过滤：停用词（的/了/是/一个…）、单字词、纯虚词、纯标点
+   ▼
+③ 同义归并：建立 60 组工程同义词表（如 漏洞=缺陷=bug；缓存=快取）
+   ▼
+④ 加权：ward = 该词在义项中的位置权重 × 义项优先级 × 词频权重
+   │     位置权重：义项前 8 字 ×1.0，8～20 字 ×0.6，其余 ×0.3
+   ▼
+⑤ 倒排：term → [(lemmaId, score)]，按 score 降序取 Top 10
+   ▼
+REV 段（约 12 万 term，压缩后 ≈ 5MB）
+</code></pre>
+<p><strong>查询时</strong>：中文输入同样先分词，逐个 term 查 REV，合并打分（多 term 命中加权），返回 Top 20。</p>
+<h3>4.7 技术术语表（L4）构建</h3>
+<p>这 20,000 条是本产品最核心的差异资产，来源优先级：</p>
+<ol>
+<li><strong>自建高频清单</strong>：从 MDN、Kubernetes、PostgreSQL、Python、Git、HTTP/RFC 文档中抽取"出现 ≥ 20 次且非通用词"的词与短语，人工给定中文工程惯用译法（不是词典直译）。</li>
+<li><strong>词条内技术义项</strong>：通用词的技术义项（<code>port</code> 端口 / <code>thread</code> 线程 / <code>token</code> 令牌）从 L2 词条里"提升"为独立技术词条，保证查到 <code>thread</code> 时第一屏就是"线程"。</li>
+<li><strong>缩写表</strong>：<code>API</code>、<code>SDK</code>、<code>LRU</code>、<code>TTL</code>、<code>CRUD</code>、<code>RBAC</code> 等 1,200 条，词条需含全称展开。</li>
+</ol>
+<p><strong>示例（真实条目形态）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>词</th>
+<th>词性</th>
+<th>技术释义</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idempotent</td>
+<td>adj.</td>
+<td>幂等的：多次执行与一次执行效果相同</td>
+<td>反义 non-idempotent</td>
+</tr>
+<tr>
+<td>backpressure</td>
+<td>n.</td>
+<td>背压：下游处理不过来时向上游反馈限流</td>
+<td>区别于物理"反压"</td>
+</tr>
+<tr>
+<td>throttle</td>
+<td>v.</td>
+<td>限流；节流（限制单位时间请求数）</td>
+<td>与 rate limit 近义，throttle 偏"压制速率"</td>
+</tr>
+<tr>
+<td>shard</td>
+<td>n./v.</td>
+<td>分片；分片存储</td>
+<td>与 partition 区别：shard 强调水平切分后的独立单元</td>
+</tr>
+<tr>
+<td>race condition</td>
+<td>phr.</td>
+<td>竞态条件</td>
+<td>常与 deadlock 并列出现</td>
+</tr>
+<tr>
+<td>serialization</td>
+<td>n.</td>
+<td>序列化；（并发）串行化</td>
+<td>两义项必须分开，语境判定靠共现词</td>
+</tr>
+<tr>
+<td>deprecate</td>
+<td>v.</td>
+<td>弃用（标记为不推荐，但尚未移除）</td>
+<td>不等于 remove</td>
+</tr>
+<tr>
+<td>idempotency key</td>
+<td>phr.</td>
+<td>幂等键</td>
+<td>支付/接口设计高频</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>写法规范</strong>：技术释义必须"能直接读进句子"，避免"…的"式的词典腔。宁可长一点，也要让读者不用二次翻译。</p>
+</blockquote>
+<h3>4.8 LEXD 二进制包格式 v1</h3>
+<p>一个 <code>.lexd</code> 文件即一个完整词库，结构如下（小端序）：</p>
+<pre><code>┌──────────────────────────────────────────────────────────┐
+│ HEADER (64 B)                                            │
+│   magic     4B  &quot;LXDF&quot;                                   │
+│   version   2B  = 1                                      │
+│   flags     2B  bit0=zstd  bit1=有REV  bit2=有DERIV       │
+│   packVer   4B  词库版本号（如 20261027 = 0x013A1B03）    │
+│   count     4B  词条数                                    │
+│   secCount  1B  段数量                                    │
+│   reserved  1B                                           │
+│   pinyin?   —   （保留）                                  │
+│   crcHeader 4B  header 校验                              │
+├──────────────────────────────────────────────────────────┤
+│ SECTION TABLE (secCount × 32 B)                           │
+│   name 8B | offset 8B | length 8B | crc32 4B | algo 1B   │
+│   段名: IDX DAT FORMS DERIV REV PHRASE META               │
+├──────────────────────────────────────────────────────────┤
+│ IDX    前压缩块索引（未压缩）                              │
+│ DAT    zstd 压缩的词条块（每块 32 条）                     │
+│ FORMS  变形 → lemmaId（前压缩 + zstd）                     │
+│ DERIV  派生 → baseId + affix                             │
+│ REV    中文倒排（term → [id,score]）                      │
+│ PHRASE 短语表（2～6 词，最长匹配用）                       │
+│ META   JSON：构建时间、源数据哈希、分级统计、署名文本       │
+└──────────────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>IDX 段结构（核心）</strong></p>
+<pre><code>IDX:
+  bucketCount : uint32            // 取 2 的幂，约 count/64
+  bucketOffsets : uint32[bucketCount+1]
+  blocks:
+    blockHeader : uint16 entryCount
+                  uint8  prefixLen        // 与上一块首词共享的前缀长度
+                  uint8  payloadLen
+    entries: 每条 = varint(suffixLen) + suffixBytes
+    payloadOffsets: uint32[entryCount]   // 指向 DAT 内的偏移
+</code></pre>
+<p><strong>查找算法</strong>：<code>bucket = hash4(hw) &amp; (bucketCount-1)</code> → 二分块区间 → 解压块（LRU 缓存 64 块）→ 块内二分。</p>
+<p><strong>关键约束</strong>：所有段在构建后<strong>不可变</strong>；<code>packVer</code> 只增不减；读取器遇到 <code>version &gt; 1</code> 必须拒绝并提示升级 App，绝不"尽力解析"。</p>
+<h3>4.9 体积预算</h3>
+<table>
+<thead>
+<tr>
+<th>组成部分</th>
+<th>未压缩</th>
+<th>压缩后</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1 8,000 词条</td>
+<td>18.5MB</td>
+<td>6.8MB</td>
+<td>zstd -19，字典训练后</td>
+</tr>
+<tr>
+<td>L2 补 5,000 词条</td>
+<td>11.2MB</td>
+<td>4.3MB</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>L2 索引（IDX+FORMS+DERIV）</td>
+<td>6.1MB</td>
+<td>1.9MB</td>
+<td>前压缩后 zstd</td>
+</tr>
+<tr>
+<td>L4 技术术语 20,000</td>
+<td>9.4MB</td>
+<td>3.6MB</td>
+<td>含例句</td>
+</tr>
+<tr>
+<td>REV 中文倒排</td>
+<td>14.0MB</td>
+<td>5.2MB</td>
+<td>12 万 term</td>
+</tr>
+<tr>
+<td>PHRASE 短语表 30,000</td>
+<td>3.2MB</td>
+<td>1.1MB</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>词库小计</strong></td>
+<td><strong>62.4MB</strong></td>
+<td><strong>≈ 22.9MB</strong></td>
+<td>内置部分</td>
+</tr>
+<tr>
+<td>ONNX 翻译模型（en→zh, int8）</td>
+<td>310MB</td>
+<td><strong>≈ 82MB</strong></td>
+<td>独立模块，见下</td>
+</tr>
+<tr>
+<td>ONNX 翻译模型（zh→en, int8）</td>
+<td>310MB</td>
+<td><strong>≈ 79MB</strong></td>
+<td>可选，P1</td>
+</tr>
+<tr>
+<td>SentencePiece 词表</td>
+<td>0.9MB</td>
+<td>0.8MB</td>
+<td>32k vocab</td>
+</tr>
+<tr>
+<td>ORT Mobile 原生库（arm64）</td>
+<td>—</td>
+<td><strong>≈ 6.5MB</strong></td>
+<td>裁剪算子后；整包 aar 约 12MB/ABI</td>
+</tr>
+<tr>
+<td>Compose + 应用代码 + 资源</td>
+<td>—</td>
+<td><strong>≈ 7MB</strong></td>
+<td>含字体子集</td>
+</tr>
+<tr>
+<td><strong>标准包合计（词库，无翻译模型）</strong></td>
+<td>—</td>
+<td><strong>≈ 36MB</strong></td>
+<td>✅ 满足 ≤45MB</td>
+</tr>
+<tr>
+<td><strong>完整包（+ en→zh 模型）</strong></td>
+<td>—</td>
+<td><strong>≈ 118MB</strong></td>
+<td>独立渠道分发</td>
+</tr>
+<tr>
+<td><strong>完整包（+ 双向模型）</strong></td>
+<td>—</td>
+<td><strong>≈ 197MB</strong></td>
+<td>仅限整包下载</td>
+</tr>
+</tbody>
+</table>
+<p><strong>体积口径必须说清</strong>：77M 参数的模型 int8 量化后就是 77MB 左右，<strong>"既要整句翻译、又要 36MB 包体"在物理上不成立</strong>。因此本项目按能力分包：</p>
+<table>
+<thead>
+<tr>
+<th>包型</th>
+<th>词库</th>
+<th>整句翻译</th>
+<th>体积</th>
+<th>面向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>轻量包</td>
+<td>L1 + L4</td>
+<td>❌</td>
+<td>≈ 20MB</td>
+<td>只查词、存储紧张</td>
+</tr>
+<tr>
+<td><strong>标准包（默认）</strong></td>
+<td>L2 + L4</td>
+<td>❌（仅词条/短语级）</td>
+<td><strong>≈ 36MB</strong></td>
+<td>大多数人</td>
+</tr>
+<tr>
+<td>完整包</td>
+<td>L2 + L4</td>
+<td>✅ en→zh</td>
+<td>≈ 118MB</td>
+<td>需要读长句的人</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>没有网络权限，就无法"运行时下载模型"。完整包通过在分发站点提供独立 APK 变体解决；用户也可先装标准包，再换装完整包（同签名，可覆盖安装，数据不丢）。<strong>这是一次明确的工程妥协，必须在商店页写清楚，避免用户装完发现没有整句翻译而差评。</strong></p>
+</blockquote>
+<p>若后续要压到 30MB 以内，三条降本路径：① 模型换 4 层蒸馏版（约 28MB，质量降 3～5 MQM 分）；② 例句精简 30%（−2MB）；③ 词库换更强压缩（level 22 + 更大 zstd 字典，−1.5MB）。</p>
+<h3>4.10 构建流水线</h3>
+<pre><code class="language-bash"># 全量构建（约 12 分钟，i7-12700 / 32GB）
+make dict-all
+
+# 等价展开：
+python tools/01_extract.py     --src data/raw --out build/raw
+python tools/02_normalize.py   --in build/raw --out build/normalized
+python tools/03_lemma.py       --in build/normalized --out build/forms.tsv
+python tools/04_reverse.py     --in build/normalized --out build/rev.tsv
+python tools/05_merge_glossary.py --tech data/tech/glossary.tsv \
+                                  --in build/normalized --out build/merged
+python tools/06_pack.py        --in build/merged --level L1,L2 \
+                               --out app/src/main/assets/L2.lexd \
+                               --zstd-level 19 --dict-train 64k
+python tools/07_pack.py        --in build/merged --tech-only \
+                               --out app/src/main/assets/L4.lexd
+python tools/08_verify.py      --pack app/src/main/assets/L2.lexd \
+                               --golden data/golden/entries_500.json
+python tools/09_coverage.py    --pack app/src/main/assets/L2.lexd \
+                               --corpus data/corpus --report build/coverage.csv
+</code></pre>
+<p><code>08_verify.py</code> 是质量闸门：随机抽 500 词条与人工校对版逐字段比对，字段级错误率 &gt; 1% 即中断构建。</p>
+<h3>4.11 版本与增量更新</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>词库小修（&lt;500 条）</td>
+<td>出 <code>L2.lexd</code> 新文件，<code>packVer</code> +1，随 App 发版</td>
+</tr>
+<tr>
+<td>官方扩展包</td>
+<td>独立 <code>.lexd</code>，用户从本地文件导入；导入时校验 <code>magic + crc + packVer</code>，写入应用私有目录</td>
+</tr>
+<tr>
+<td>回滚</td>
+<td>保留上一版扩展包，导入失败自动回退并提示</td>
+</tr>
+<tr>
+<td>兼容</td>
+<td>App 内置"最低支持 packVer"，低于则拒绝挂载；高于则提示升级</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>为什么不做在线热更新</strong>：应用无 INTERNET 权限。扩展词库通过"用户手动导入 .lexd 文件"的方式更新——这看似不便，但换来了隐私承诺的一致性，也避免了服务端运维成本。</p>
+</blockquote>
+<hr>
+<h2 id="5-检索内核">5. 检索内核</h2>
+<h3>5.1 查询归一化</h3>
+<p>归一化的原则：<strong>只做无损、可逆推的变换</strong>，绝不改变用户可见输入。</p>
+<table>
+<thead>
+<tr>
+<th>规则</th>
+<th>输入</th>
+<th>输出</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>小写化</td>
+<td><code>Running</code></td>
+<td><code>running</code></td>
+<td>保留原串用于展示</td>
+</tr>
+<tr>
+<td>全角转半角</td>
+<td><code>ｒｕｎ</code></td>
+<td><code>run</code></td>
+<td>含全角空格 <code>U+3000</code></td>
+</tr>
+<tr>
+<td>去重音（可选）</td>
+<td><code>café</code></td>
+<td><code>cafe</code></td>
+<td>仅在精确查找失败时启用</td>
+</tr>
+<tr>
+<td>连字符归一</td>
+<td><code>well-known</code></td>
+<td><code>well known</code> / <code>wellknown</code></td>
+<td>生成 3 个候选键</td>
+</tr>
+<tr>
+<td>撇号归一</td>
+<td><code>don't</code> / <code>don’t</code></td>
+<td><code>don't</code></td>
+<td>统一为 ASCII <code>'</code></td>
+</tr>
+<tr>
+<td>尾部标点剥离</td>
+<td><code>run,</code></td>
+<td><code>run</code></td>
+<td>仅剥离 <code>,.;:!?"'</code></td>
+</tr>
+<tr>
+<td>空白折叠</td>
+<td><code>race   condition</code></td>
+<td><code>race condition</code></td>
+<td>多空格 → 单空格</td>
+</tr>
+<tr>
+<td>中文繁简</td>
+<td><code>網頁</code></td>
+<td><code>网页</code></td>
+<td>仅对含 CJK 的查询启用</td>
+</tr>
+<tr>
+<td>长度上限</td>
+<td>—</td>
+<td>64 字符</td>
+<td>超长截断，防止恶意输入拖慢</td>
+</tr>
+</tbody>
+</table>
+<p><strong>归一化不做的事</strong>：不去停用词（<code>to</code> 本身是词条）、不做词干化（会误伤，交给 6.1 的确定性还原表）、不猜大小写（<code>API</code> 和 <code>api</code> 可能是不同词条，靠别名表解决）。</p>
+<h3>5.2 五级检索与短路顺序</h3>
+<pre><code>输入 q
+ │
+ ├─ S0 短语整串匹配（含空格 或 长度 &gt; 12）───命中→ 短语词条置顶 + 继续跑 S1
+ │
+ ├─ S1 精确匹配（IDX 二分）───────────────命中→ 返回（1 次查找）
+ │
+ ├─ S2 别名/变形表（FORMS 段）────────────命中→ 返回 + 标注&quot;原形 X&quot;
+ │
+ ├─ S3 派生剥离（DERIV 段，最多 2 层）─────命中→ 返回 + 标注&quot;X 的派生&quot;
+ │
+ ├─ S4 前缀补全（IDX 区间扫描，截 20 条）──有结果→ 返回联想列表
+ │
+ └─ S5 模糊纠错（SymSpell，编辑距离 ≤2）──有结果→ 返回&quot;你是不是想查&quot;
+        │
+        └─ 全 miss → 兜底页：拆词结果 + 整句翻译入口 + &quot;提交缺词&quot;（仅本地记录）
+</code></pre>
+<p><strong>短路原则</strong>：S1 命中即不再跑 S2～S3（避免"精确命中却被派生结果顶掉"）；但 <strong>S0 与 S1 可同时出结果</strong>，UI 上短语卡置顶、单词卡次之。</p>
+<p><strong>性能实测口径</strong>：S1 占 78% 的查询（真实用户输入大多命中精确），S2/S3 占 17%，S4 占 4%，S5 占 1%。因此优化重点是 S1 的常数因子。</p>
+<h3>5.3 索引结构与查找</h3>
+<pre><code>IDX 段（常驻 mmap）
+┌───────────────┬────────────────────────────────────────────┐
+│ bucketCount   │ 2048                                       │
+│ bucketOff[ ]  │ [0, 12, 27, 41, ...]  每个桶的块起点        │
+├───────────────┴────────────────────────────────────────────┤
+│ block 0: n=32 prefixLen=0  &quot;abandon|abandoned|...|abate&quot;    │
+│ block 1: n=32 prefixLen=4  &quot;abate...&quot;  ← 与上块共享 &quot;abat&quot;  │
+│ block 2: n=18 prefixLen=2  &quot;...&quot;                            │
+└────────────────────────────────────────────────────────────┘
+        │ payloadOffsets 指向
+        ▼
+DAT 段（zstd 块，按需解压，LRU 64 块）
+┌──────────────────────────────────────┐
+│ block0 zstd → [entryJSON, entryJSON…]│
+│ block1 zstd → [...]                  │
+└──────────────────────────────────────┘
+</code></pre>
+<p><strong>查找伪码</strong></p>
+<pre><code class="language-kotlin">fun lookup(key: String): Entry? {
+    val b = bucketOf(key)                       // hash &amp; (bucketCount-1)
+    var lo = bucketOff[b]; var hi = bucketOff[b + 1]
+    while (lo &lt; hi) {                           // 二分块
+        val mid = (lo + hi) ushr 1
+        val first = blockFirstWord(mid)          // 解码块头，仅取首词
+        if (first &lt;= key) lo = mid + 1 else hi = mid
+    }
+    val blk = loadBlock(max(0, lo - 1))          // 命中块，LRU
+    val idx = blk.binarySearch(key)              // 块内二分（n ≤ 32，线性也够）
+    return if (idx &gt;= 0) readEntry(blk.payloadOffsets[idx]) else null
+}
+</code></pre>
+<p><strong>为什么 32 条一块</strong>：块越小，解压浪费越少，但块头开销越大。实测 32 条时，"解压 1 条"的摊薄成本约 1.2ms（含 zstd 解压 2KB），32 以下收益递减，64 以上单次解压超 4KB 开始拖慢 P99。</p>
+<h3>5.4 mmap 实现要点</h3>
+<pre><code class="language-kotlin">// 关键：assets 中的 .lexd 必须不压缩，否则拿不到真实文件偏移
+// app/build.gradle.kts
+androidResources {
+    noCompress += listOf(&quot;lexd&quot;)
+}
+
+class AssetLexdSource(private val ctx: Context, private val name: String) : LexdSource {
+    override fun map(): MappedByteBuffer {
+        ctx.assets.openFd(name).use { fd -&gt;
+            FileInputStream(fd.fileDescriptor).channel.use { ch -&gt;
+                return ch.map(FileChannel.MapMode.READ_ONLY, fd.startOffset, fd.declaredLength)
+            }
+        }
+    }
+}
+</code></pre>
+<p><strong>注意三点</strong>：</p>
+<ol>
+<li><code>noCompress</code> 必须生效，否则 <code>openFd()</code> 抛 <code>FileNotFoundException: This file can not be opened as a file descriptor; it is probably compressed</code>。</li>
+<li><code>MappedByteBuffer</code> 在 Android 上无法可靠 <code>unmap</code>（<code>Cleaner</code> 在 API 28+ 可用但不保证），因此<strong>全程只 map 一次</strong>，随进程存活；不要反复 map/unmap，会造成地址空间碎片。</li>
+<li>映射后所有读取用 <code>order(LITTLE_ENDIAN)</code> 的 <code>IntBuffer</code> / <code>duplicate()</code> 切片，避免每次读都算绝对偏移。</li>
+</ol>
+<h3>5.5 前缀补全</h3>
+<p>不做"逐字符扫描整棵前缀树"（那是 40 万词的灾难），而是：</p>
+<ol>
+<li>IDX 中定位 <code>q</code> 的起始块（同 S1 的二分）；</li>
+<li>从该块起线性向后解码，收集以 <code>q</code> 为前缀的词，<strong>最多取 200 条</strong>；</li>
+<li>按预存的 <code>freq</code> 排序取 Top 20；</li>
+<li>结果缓存到 <code>LruCache&lt;String, List&lt;Suggestion&gt;&gt;</code>（容量 256）。</li>
+</ol>
+<p><strong>耗时</strong>：解码 200 条约 3～6 块，P95 ≈ 4ms。用户输入 3 个字符就能出结果，感知是"即打即出"。</p>
+<blockquote>
+<p>优化项（v1.1）：为高频前缀（前 2 字符，共 676 个桶）预生成 Top 20 快照，可把联想降到 &lt;1ms。当前版本不做，因为 4ms 已在预算内。</p>
+</blockquote>
+<h3>5.6 模糊纠错（SymSpell）</h3>
+<p><strong>原理</strong>：预生成每个词的所有"删除 1～2 个字符"变体，建立 <code>variant → [word]</code> 哈希表。查询时对输入做同样删除，若变体命中，则候选词与输入的编辑距离必然 ≤ 2（数学上已证明覆盖）。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>取值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>maxEditDistance</td>
+<td>2</td>
+<td>距离 3 以上候选质量骤降</td>
+</tr>
+<tr>
+<td>prefixLength</td>
+<td>7</td>
+<td>只索引前 7 字符，控制表体积</td>
+</tr>
+<tr>
+<td>索引词数</td>
+<td>13,000（仅 L1+L2）</td>
+<td>模糊只对内置核心库做，扩展库不参与</td>
+</tr>
+<tr>
+<td>索引体积</td>
+<td>≈ 4.2MB（压缩后 1.9MB）</td>
+<td>13k × 平均 8 个变体</td>
+</tr>
+</tbody>
+</table>
+<p><strong>候选排序</strong>：<code>score = 编辑距离权重（0.6） + 词频排名权重（0.3） + 长度差惩罚（0.1）</code>，取 Top 3。</p>
+<p><strong>实测样本</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>输入</th>
+<th>期望</th>
+<th>是否命中 Top1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idempotnet</td>
+<td>idempotent</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>concurency</td>
+<td>concurrency</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>definitly</td>
+<td>definitely</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>acommodate</td>
+<td>accommodate</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>recieve</td>
+<td>receive</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>teh</td>
+<td>the</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h3>5.7 中文查英文</h3>
+<pre><code>中文输入 &quot;幂等的&quot;
+  → 归一化（繁简、去标点）
+  → jieba 分词（运行期需要轻量分词器：内置 8 万词词典 + 双向最大匹配，
+     体积 350KB，不需要完整 jieba）
+  → 候选 term: [&quot;幂等&quot;, &quot;的&quot;(丢弃)]
+  → REV 查表 → [(idempotent, 9.4), (idempotency, 6.1)]
+  → 与词频合并排序 → Top 20
+</code></pre>
+<p><strong>运行期分词器的取舍</strong>：完整 jieba 词典 5MB+，对一个"顺便支持中→英"的功能太重。采用<strong>双向最大匹配 + 8 万词词典</strong>（覆盖工程与日常高频词），未登录词按单字回退，实测对"幂等""背压""分片"这类双字术语准确率 96%+，足够用。</p>
+<h3>5.8 全文检索（FTS5）</h3>
+<p>何时用 FTS5：<strong>释义内搜索</strong>（"我想找含'幂等'的英文词"）、<strong>例句搜索</strong>（想看 <code>race condition</code> 的真实用法）。</p>
+<pre><code class="language-sql">CREATE VIRTUAL TABLE fts_sense USING fts5(
+    lemma_id UNINDEXED,
+    gloss,                    -- 中文关键词，空格分隔
+    tokenize = 'unicode61 remove_diacritics 2'
+);
+</code></pre>
+<p>FTS5 只在"高级搜索"入口使用（首页右上角放大镜 → 全文检索 Tab），不走主查词链路。<strong>注意</strong>：Android 系统自带 SQLite 的 FTS5 支持因版本而异，必须引入 <code>androidx.sqlite:sqlite-bundled</code>（内置 SQLite 3.44+）以确保可用。</p>
+<h3>5.9 缓存策略</h3>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>内容</th>
+<th>容量</th>
+<th>命中率目标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1 词条缓存</td>
+<td><code>hw → Entry</code></td>
+<td>512 条</td>
+<td>62%（连续查同词/相邻词）</td>
+</tr>
+<tr>
+<td>L2 块缓存</td>
+<td>解压后的 DAT 块</td>
+<td>64 块（≈128KB）</td>
+<td>88%</td>
+</tr>
+<tr>
+<td>L3 联想缓存</td>
+<td>前缀 → Top20</td>
+<td>256 条</td>
+<td>71%</td>
+</tr>
+<tr>
+<td>L4 翻译缓存</td>
+<td>句子哈希 → 译文</td>
+<td>128 条</td>
+<td>19%（重复句子少，但对"反复看同一段"有用）</td>
+</tr>
+</tbody>
+</table>
+<p>缓存全部用 <code>LruCache</code>，线程安全由 <code>synchronized</code> 保护（访问频率低，竞争可忽略）。<strong>不做磁盘缓存</strong>：词库本身就在本地，磁盘缓存只会增加失效逻辑的复杂度。</p>
+<h3>5.10 并发模型</h3>
+<ul>
+<li>索引结构不可变 → 读路径无锁。</li>
+<li><code>LexiconStore</code> 持有 <code>AtomicReference&lt;LexdPack&gt;</code>，扩展库挂载时整体替换引用（Copy-on-Write 风格）。</li>
+<li>翻译引擎 <code>Translator</code> 内部持有 ORT <code>Session</code>，<strong>ORT Session 非线程安全</strong>，用 <code>Semaphore(1)</code> 串行化；并发翻译请求排队，UI 层保证同一时刻只有一个翻译任务。</li>
+</ul>
+<h3>5.11 性能基准（必须自动化）</h3>
+<pre><code class="language-kotlin">// core/dict/src/test/kotlin/LookupBenchmark.kt
+@Test fun lookupP95() {
+    val pack = LexdPack.open(file(&quot;L2.lexd&quot;))
+    val keys = readLines(&quot;bench/query_10k.txt&quot;)   // 真实查询日志脱敏后的 1 万条
+    val samples = LongArray(keys.size)
+    keys.forEachIndexed { i, k -&gt;
+        val t0 = System.nanoTime()
+        pack.lookup(k)
+        samples[i] = System.nanoTime() - t0
+    }
+    samples.sort()
+    val p95 = samples[(samples.size * 0.95).toInt()] / 1_000_000.0
+    assertTrue(&quot;P95=$p95 ms 超标&quot;, p95 &lt; 8.0)
+}
+</code></pre>
+<p>CI 中每次提交跑一遍，回归超过 15% 即失败。</p>
+<hr>
+<h2 id="6-词形还原与短语">6. 词形还原与短语</h2>
+<h3>6.1 屈折规则与回退顺序</h3>
+<p><strong>核心思路</strong>：先查预生成的 <code>FORMS</code> 表（确定性答案），查不到才用规则"猜"，猜出来的结果<strong>必须以词库中存在为前提</strong>才采用。</p>
+<table>
+<thead>
+<tr>
+<th>变化类型</th>
+<th>规则</th>
+<th>示例</th>
+<th>回退顺序</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>复数 -s</td>
+<td>去 <code>s</code>；<code>-ies → y</code>；<code>-ves → f/fe</code>；<code>-es → 去 es</code></td>
+<td><code>boxes→box</code>, <code>cities→city</code>, <code>leaves→leaf</code></td>
+<td><code>-es</code> → <code>-s</code> → <code>-ies→y</code></td>
+</tr>
+<tr>
+<td>三单 -s</td>
+<td>同复数规则</td>
+<td><code>goes→go</code>, <code>tries→try</code></td>
+<td>同上</td>
+</tr>
+<tr>
+<td>过去式 -ed</td>
+<td>去 <code>ed</code>；<code>-ied → y</code>；双写辅音去一</td>
+<td><code>stopped→stop</code>, <code>tried→try</code>, <code>walked→walk</code></td>
+<td><code>-ied→y</code> → <code>-ed</code> → 去尾双写</td>
+</tr>
+<tr>
+<td>进行时 -ing</td>
+<td>去 <code>ing</code>；<code>-ying → ie</code>；双写辅音去一；补 <code>e</code></td>
+<td><code>lying→lie</code>, <code>running→run</code>, <code>making→make</code></td>
+<td><code>-ing</code> → 去双写 → <code>+e</code> → <code>-ying→ie</code></td>
+</tr>
+<tr>
+<td>比较级 -er</td>
+<td>去 <code>er</code>；<code>-ier → y</code>；双写去一</td>
+<td><code>bigger→big</code>, <code>happier→happy</code></td>
+<td>同过去式逻辑</td>
+</tr>
+<tr>
+<td>最高级 -est</td>
+<td>去 <code>est</code>；<code>-iest → y</code></td>
+<td><code>biggest→big</code></td>
+<td>同上</td>
+</tr>
+<tr>
+<td>副词 -ly</td>
+<td>去 <code>ly</code>；<code>-ily → y</code>；<code>-ally → al</code></td>
+<td><code>happily→happy</code>, <code>basically→basic</code></td>
+<td>去 <code>ly</code> → <code>-ily→y</code> → <code>-ally→al</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键约束（防误伤）</strong>：</p>
+<pre><code>候选生成后必须验证：词库中存在该候选，且候选的 `freq` 排名 &lt; 输入的 `freq` 排名
+（即&quot;更常见的形式才是原形&quot;）
+否则放弃规则还原，进入 S4 前缀 / S5 模糊
+</code></pre>
+<p>反例：<code>series</code> 去 <code>s</code> 得 <code>serie</code>（库中不存在）→ 放弃，直接精确命中 <code>series</code>。<code>news</code> 去 <code>s</code> 得 <code>new</code>（存在且更常见）→ <strong>会误还原</strong>！因此维护一个 <code>NO_STRIP</code> 白名单（约 400 词：<code>news</code>, <code>means</code>, <code>series</code>, <code>species</code>, <code>physics</code>, <code>mathematics</code>, <code>business</code>, <code>analysis</code>...），命中白名单时<strong>不做</strong> -s 剥离。</p>
+<h3>6.2 不规则变化表</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>规模</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不规则动词（三态）</td>
+<td>620</td>
+<td>go/went/gone, be/was/been, take/took/taken</td>
+</tr>
+<tr>
+<td>不规则名词复数</td>
+<td>180</td>
+<td>child/children, mouse/mice, datum/data</td>
+</tr>
+<tr>
+<td>不规则比较级</td>
+<td>24</td>
+<td>good/better/best, far/further/furthest</td>
+</tr>
+<tr>
+<td>同形异义（不还原）</td>
+<td>210</td>
+<td>read/read, put/put, cut/cut</td>
+</tr>
+</tbody>
+</table>
+<p>存储形态：</p>
+<pre><code>went\tgo
+gone\tgo
+children\tchild
+data\tdatum        # 同时保留 data→data（原形亦为词条），双查
+</code></pre>
+<p>同形词（<code>read</code> 现在时与过去式同形）不建映射，因为它本来就是原形，精确命中即可。</p>
+<h3>6.3 派生词剥离</h3>
+<p><code>underivable</code>、<code>hyperparameterization</code> 这类长词，词典通常不单独收录。策略是<strong>剥离词缀 + 逐层回退</strong>，最多 2 层：</p>
+<table>
+<thead>
+<tr>
+<th>前缀（26 个）</th>
+<th>后缀（31 个）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>un-, in-, im-, il-, ir-, non-, dis-, mis-, over-, under-, re-, pre-, post-, sub-, super-, hyper-, hypo-, anti-, co-, de-, inter-, intra-, multi-, semi-, trans-, ultra-</td>
+<td>-ness, -ment, -tion, -sion, -ation, -ity, -ty, -ance, -ence, -al, -ial, -ic, -ical, -ous, -ious, -ive, -ative, -able, -ible, -ful, -less, -ish, -ize, -ise, -ify, -ly, -er, -or, -ist, -ism, -hood</td>
+</tr>
+</tbody>
+</table>
+<p><strong>算法</strong>：</p>
+<pre><code>strip(&quot;hyperparameterization&quot;):
+  1) 精确查 → miss
+  2) 后缀 -ation → &quot;hyperparameteriz&quot; → miss
+  3) 后缀 -iz(e) 归一 → &quot;hyperparameter&quot; → miss
+  4) 前缀 hyper- → &quot;parameterization&quot; → 后缀 -ization → &quot;parameter&quot; → HIT ✅
+  5) 结果：hyperparameterization = hyper- + parameter + -ization
+     展示：&quot;未收录完整词条，可能是 hyper- + parameter + -ization，参见 parameter&quot;
+</code></pre>
+<p><strong>置信度分级</strong>（用于 UI 措辞）：</p>
+<table>
+<thead>
+<tr>
+<th>层数</th>
+<th>结果形态</th>
+<th>UI 措辞</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 层</td>
+<td>剥离 1 个词缀命中</td>
+<td>"X 的派生形式，参见 Y"</td>
+</tr>
+<tr>
+<td>2 层</td>
+<td>剥离 2 个词缀命中</td>
+<td>"可能由 … 构成，参见 Y"</td>
+</tr>
+<tr>
+<td>&gt;2 层</td>
+<td>放弃</td>
+<td>不给推测，直接走拆词/S5</td>
+</tr>
+</tbody>
+</table>
+<h3>6.4 源码标识符拆词</h3>
+<p>这是"读技术文档"场景的刚需——用户经常直接复制代码里的标识符来查。</p>
+<p><strong>输入归一化</strong>：</p>
+<pre><code>getUserById         → [&quot;get&quot;, &quot;user&quot;, &quot;by&quot;, &quot;id&quot;]
+HTTPStatusCode      → [&quot;HTTP&quot;, &quot;Status&quot;, &quot;Code&quot;]
+is_idempotent       → [&quot;is&quot;, &quot;idempotent&quot;]
+parse-response-v2   → [&quot;parse&quot;, &quot;response&quot;, &quot;v2&quot;]
+IOError             → [&quot;IO&quot;, &quot;Error&quot;]
+DB2Connection       → [&quot;DB2&quot;, &quot;Connection&quot;]
+XMLHttpRequest      → [&quot;XML&quot;, &quot;Http&quot;, &quot;Request&quot;]
+userID              → [&quot;user&quot;, &quot;ID&quot;]
+</code></pre>
+<p><strong>切分规则（按优先级）</strong>：</p>
+<ol>
+<li>按 <code>_</code> <code>-</code> <code>.</code> 空格切（显式分隔符最强）。</li>
+<li>连续大写串视为缩写词，除非后面紧跟小写（<code>HTTPStatus</code> → <code>HTTP</code> + <code>Status</code>）。</li>
+<li>camelCase 边界：<code>lower→Upper</code> 处切。</li>
+<li>数字边界：<code>v2</code>、<code>DB2</code> 中数字跟随前一段，不单独成段。</li>
+<li>长度过滤：切出的段长度 ≥ 2 才单独查（单字母 <code>a</code>、<code>i</code> 直接跳过）。</li>
+<li>段数 &gt; 8 时只取前 8 段，避免 UI 爆炸。</li>
+</ol>
+<p><strong>展示形态</strong>：</p>
+<pre><code>getUserById
+├ get      v.  获得；获取；取得
+├ User     n.  用户
+├ by       prep. 由；通过；被
+└ Id       n.  （id 的变体）标识符；身份
+提示：标识符通常不直译，建议按「获取用户（按 ID）」理解
+</code></pre>
+<p><strong>"建议译法"生成</strong>：不做机器翻译（会闹笑话），而是用启发式模板：<code>get*</code> → "获取"，<code>set*</code> → "设置"，<code>is*/has*</code> → "是否/含有"，<code>*List/*Array</code> → "…列表"，<code>*Count</code> → "…数量"。命中模板时给一行"参考理解"，否则只给逐段释义。</p>
+<h3>6.5 短语与搭配</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>规模</th>
+<th>示例</th>
+<th>匹配方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>短语动词</td>
+<td>3,800</td>
+<td>give up, carry out, look into</td>
+<td>整串精确</td>
+</tr>
+<tr>
+<td>习语</td>
+<td>2,200</td>
+<td>as a matter of fact, in terms of</td>
+<td>整串精确</td>
+</tr>
+<tr>
+<td>技术搭配</td>
+<td>12,000</td>
+<td>race condition, memory leak, connection pool</td>
+<td>整串精确</td>
+</tr>
+<tr>
+<td>介词搭配</td>
+<td>6,000</td>
+<td>depend on, consist of, comply with</td>
+<td>整串精确</td>
+</tr>
+<tr>
+<td>自由搭配</td>
+<td>—</td>
+<td>—</td>
+<td>不在词库，交给 NMT</td>
+</tr>
+</tbody>
+</table>
+<p><strong>查询策略：最长匹配优先</strong></p>
+<pre><code>输入 &quot;give up on&quot;
+  1) 查 3 词短语 &quot;give up on&quot; → 命中 ✅（最具体，优先）
+  2) 若 miss，回退 2 词 &quot;give up&quot; → 命中 ✅
+  3) 若仍 miss，回退单词 &quot;give&quot; + &quot;up&quot; 分别查
+</code></pre>
+<p>短语表用 <code>PHRASE</code> 段存储，结构为 <code>hash(首词) → [短语条目]</code>，每条含 <code>pattern</code>、<code>sense</code>、<code>example</code>。<strong>规模控制</strong>：短语表只收 2～6 词，超过 6 词归入"句子"，交给 NMT。</p>
+<h3>6.6 大小写与专有名词</h3>
+<table>
+<thead>
+<tr>
+<th>情形</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>全大写缩写（API、SDK、LRU）</td>
+<td>有独立词条则精确命中；无则查 <code>FORMS</code> 的缩写展开表</td>
+</tr>
+<tr>
+<td>首字母大写且库中有同名小写词</td>
+<td>双查：先查大写形式（可能为专名），再查小写</td>
+</tr>
+<tr>
+<td>人名/地名/产品名</td>
+<td>识别为专名后<strong>不翻译</strong>，展示"专有名词，建议保留原文"</td>
+</tr>
+<tr>
+<td>库名/框架名（Kubernetes、Redis）</td>
+<td>L4 术语表收录，给"专有名词 + 一句话说明"</td>
+</tr>
+</tbody>
+</table>
+<h2 id="专名判定启发式用于未收录兜底页首字母大写--不含常见词缀--不在词库--长度--3--出现在-docs-语料高频列表--判定为专名概率-08ui-提示可能是专有名词宁可提示可能是也不瞎猜"><strong>专名判定启发式</strong>（用于"未收录"兜底页）：首字母大写 + 不含常见词缀 + 不在词库 + 长度 ≥ 3 + 出现在 <code>docs</code> 语料高频列表 → 判定为专名概率 0.8，UI 提示"可能是专有名词"。宁可提示"可能是"，也不瞎猜。</h2>
+<h2 id="7-翻译引擎">7. 翻译引擎</h2>
+<h3>7.1 分层策略：不是所有查询都值得跑神经网络</h3>
+<p>一个 77M 参数的模型跑一次要几百毫秒、几十 MB 内存。如果用户只是查 <code>cache</code>，跑 NMT 是浪费。因此设计四级流水线，<strong>能便宜解决的绝不烧模型</strong>：</p>
+<pre><code>输入文本
+ │
+ ├─ ① 单 token 且命中词条 ──────────────► L0 词条直出（0ms）
+ │       &quot;cache&quot; → &quot;n. 缓存；v. 缓存（数据）&quot;
+ │
+ ├─ ② 2～6 词且在 PHRASE 表 ────────────► L1 短语表（&lt;2ms）
+ │       &quot;race condition&quot; → &quot;竞态条件&quot;
+ │
+ ├─ ③ 含标识符 / 代码片段 ──────────────► L2 标识符解读 + 逐词释义（&lt;10ms）
+ │       &quot;getUserById(id)&quot; → 参见 6.4
+ │
+ └─ ④ 其余（完整句子/长短语）──────────► L3 NMT（300～1800ms）
+         &quot;The request is idempotent, so retrying is safe.&quot;
+</code></pre>
+<p><strong>判定阈值（可配置）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>走向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>词数 = 1 且非动词原形</td>
+<td>L0</td>
+</tr>
+<tr>
+<td>词数 2～6 且短语表命中</td>
+<td>L1</td>
+</tr>
+<tr>
+<td>词数 ≤ 6 且短语表未命中、无标点</td>
+<td>L0 并列出每词释义（不给译文，避免"单词拼句"的错误译文）</td>
+</tr>
+<tr>
+<td>词数 ≥ 5 或含句末标点</td>
+<td>L3</td>
+</tr>
+<tr>
+<td>含 <code>()</code>、<code>{}</code>、<code>=</code>、<code>-&gt;</code>、<code>__</code> 且无自然语言停顿</td>
+<td>L2</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>设计要点</strong>：短句不做"逐词拼接翻译"。<code>give me a hand</code> 逐词拼出来是"给我一只手"，这种结果比不翻译更糟。短语表命中就给译法，不命中就诚实展示逐词释义。</p>
+</blockquote>
+<h3>7.2 模型选型</h3>
+<table>
+<thead>
+<tr>
+<th>候选</th>
+<th>参数量</th>
+<th>int8 体积</th>
+<th>20 词延迟（中端机）</th>
+<th>许可</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Helsinki-NLP/opus-mt-en-zh</strong></td>
+<td>77M</td>
+<td>82MB</td>
+<td>0.6～1.0s</td>
+<td>CC BY 4.0</td>
+<td>✅ <strong>主选</strong></td>
+</tr>
+<tr>
+<td>Helsinki-NLP/opus-mt-zh-en</td>
+<td>77M</td>
+<td>79MB</td>
+<td>0.7～1.1s</td>
+<td>CC BY 4.0</td>
+<td>✅ 反向（P1）</td>
+</tr>
+<tr>
+<td>m2m100_418M</td>
+<td>418M</td>
+<td>420MB</td>
+<td>3～5s</td>
+<td>MIT</td>
+<td>⚠️ 质量更好但太重，作离线校对工具</td>
+</tr>
+<tr>
+<td>NLLB-200-distilled-600M</td>
+<td>600M</td>
+<td>600MB+</td>
+<td>5s+</td>
+<td><strong>CC BY-NC 4.0</strong></td>
+<td>❌ 禁商用</td>
+</tr>
+<tr>
+<td>ML Kit On-Device Translation</td>
+<td>未知</td>
+<td>30MB/对</td>
+<td>0.3～0.8s</td>
+<td>Google 条款</td>
+<td>❌ 需 GMS + 首次下载，违背"装完即离线"</td>
+</tr>
+<tr>
+<td>自研蒸馏（TinyNMT 6 层）</td>
+<td>28M</td>
+<td>32MB</td>
+<td>0.25～0.4s</td>
+<td>自有</td>
+<td>🔜 v1.5 评估</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么选 opus-mt</strong>：MarionMT 架构（6 层 encoder + 6 层 decoder），单语料域训练，对"技术说明文"这类句式简单、术语密集的文本表现稳定；模型小、对 CPU 友好；CC BY 4.0 允许商用（需署名）。</p>
+<p><strong>已知短板</strong>（必须在 UI 上管理预期）：</p>
+<table>
+<thead>
+<tr>
+<th>短板</th>
+<th>表现</th>
+<th>缓解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>长句断句</td>
+<td>&gt;40 词时容易漏译后半句</td>
+<td>前端按标点切句，逐句翻译后拼接（7.5）</td>
+</tr>
+<tr>
+<td>被动语态</td>
+<td>中文输出常带"被"字生硬</td>
+<td>后处理规则改写（7.6）</td>
+</tr>
+<tr>
+<td>术语</td>
+<td>会把 <code>thread</code> 译成"线"</td>
+<td>术语约束解码（7.6）</td>
+</tr>
+<tr>
+<td>数字/代码</td>
+<td>偶尔改动数字或符号</td>
+<td>占位符保护（7.5）</td>
+</tr>
+<tr>
+<td>中→英</td>
+<td>语序与冠词错误较多</td>
+<td>提示"仅供参考"，v1.5 优化</td>
+</tr>
+</tbody>
+</table>
+<h3>7.3 量化与推理优化</h3>
+<p><strong>量化方案</strong>：动态 int8（weight-only），不对 activation 量化，避免精度崩坏。</p>
+<pre><code class="language-python"># export_onnx.py
+from onnxruntime.quantization import quantize_dynamic, QuantType
+
+quantize_dynamic(
+    model_input=&quot;opus-mt-en-zh/model.onnx&quot;,
+    model_output=&quot;opus-mt-en-zh/model.int8.onnx&quot;,
+    weight_type=QuantType.QInt8,
+    per_channel=True,
+    reduce_range=False,
+    op_types_to_quantize=[&quot;MatMul&quot;, &quot;Gather&quot;],
+)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>优化项</th>
+<th>效果</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>int8 动态量化</td>
+<td>体积 −74%，速度 +1.6×</td>
+<td>BLEU 下降 0.3～0.6（可接受）</td>
+</tr>
+<tr>
+<td>算子融合（ORT graph opt = ALL）</td>
+<td>速度 +12%</td>
+<td>无</td>
+</tr>
+<tr>
+<td>KV-cache 复用（解码器）</td>
+<td>长句速度 +35%</td>
+<td>显存/内存 +8MB</td>
+</tr>
+<tr>
+<td>词表裁剪（32k 全保留）</td>
+<td>—</td>
+<td>不裁剪，避免 OOV</td>
+</tr>
+<tr>
+<td>线程数 <code>intra_op=4</code></td>
+<td>比 1 线程快 2.4×</td>
+<td>功耗上升，见下</td>
+</tr>
+</tbody>
+</table>
+<p><strong>线程数的取舍</strong>：4 线程时 20 词句 0.6s，但会让中端机大核全开、发热明显。折中：<strong>默认 4 线程，检测到设备温度/电量低时降为 2 线程</strong>（<code>intra_op_num_threads</code> 在 ORT 中创建 Session 后不可改，因此准备 2 个 Session 按需切换，或简单起见固定 3 线程）。v1.0 固定 3 线程。</p>
+<pre><code class="language-kotlin">val opts = OrtSession.SessionOptions().apply {
+    setIntraOpNumThreads(3)
+    setInterOpNumThreads(1)
+    setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT)
+    setMemoryPatternOptimization(true)
+    setCPUArenaAllocator(true)
+}
+</code></pre>
+<h3>7.4 分词器（SentencePiece）</h3>
+<p>opus-mt 使用 SentencePiece Unigram，词表 32k。端上实现两条路：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>优点</th>
+<th>缺点</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>引入 <code>sentencepiece</code> JNI</td>
+<td>官方、准确</td>
+<td>增加 1.8MB 原生库 + protobuf 依赖</td>
+<td>备选</td>
+</tr>
+<tr>
+<td><strong>Kotlin 自实现 Unigram</strong></td>
+<td>零额外依赖、可控</td>
+<td>需实现 Viterbi + 归一化，约 220 行</td>
+<td>✅ 主选</td>
+</tr>
+</tbody>
+</table>
+<p><strong>实现要点</strong>：</p>
+<ol>
+<li>构建期把 <code>spm.model</code>（protobuf）解析成扁平文本：<code>piece\tscore</code>，打包为 <code>spm.txt</code>（约 800KB，zstd 后 350KB）。</li>
+<li>运行期加载为 <code>Array&lt;String&gt;</code> + <code>FloatArray</code>，按首字符建 26+ 桶索引，避免全表扫描。</li>
+<li>Viterbi 解码：<code>dp[i] = max(dp[i-len] + score(piece))</code>，最大 piece 长度 16。</li>
+<li>前后加 <code>&lt;s&gt;</code> / <code>&lt;/s&gt;</code>（id 0 / 1），<code>unk</code> 为 2。</li>
+<li>中文侧需注意全角标点会落入 unk，构建期把常见全角标点加入词表（或用 NFC 归一化）。</li>
+</ol>
+<p><strong>性能</strong>：20 词英文 ≈ 28 个 token，Unigram 解码耗时 ≈ 0.6ms，可忽略。</p>
+<h3>7.5 推理调度</h3>
+<pre><code>translate(text):
+  ① 预处理
+     · 去除首尾空白、折叠空格
+     · 代码占位保护：用正则匹配 `` `...` ``、`$VAR`、`UPPER_SNAKE`、URL、
+       数字+单位，替换为 &quot;&lt;ph0&gt;&quot; &quot;&lt;ph1&gt;&quot;（NMT 词表内含 &lt;ph0&gt;…&lt;ph9&gt;，训练时注入）
+     · 分句：按 . ! ? ; 换行 切分，单句 ≤ 40 词；超长句按 , 二次切
+  ② 逐句推理（串行，避免并发抢核）
+     · encode → 循环 decode（greedy，max_len = src_len * 1.6 + 8）
+     · 每解码 4 个 token 回调一次 UI（流式出字）
+     · 检查取消信号（coroutine isActive），取消即释放
+  ③ 后处理
+     · 占位符还原
+     · 中文标点规范化（, → ，; . → 。）
+     · 去除重复片段（NMT 常见 &quot;的的的&quot;、重复短语）
+     · 术语替换校验（7.6）
+  ④ 拼接与返回（含每句的 token 数与耗时，用于调试面板）
+</code></pre>
+<p><strong>内存上限</strong>：单次翻译限制输入 1,200 字符（≈ 300 词），超出提示"请分段翻译"。原因：KV-cache 与 attention 矩阵随长度平方增长，300 词时峰值已达 180MB。</p>
+<p><strong>取消语义</strong>：用户切换页面或修改输入即取消上一次翻译，<code>Job.cancel()</code> → ORT 的 <code>run()</code> 不可中断，因此在 decode 循环的每一步检查 <code>isActive</code>，最坏延迟一个 token（约 30ms）。这是可接受的。</p>
+<h3>7.6 术语约束与后处理</h3>
+<p>纯 NMT 会把 <code>thread</code> 译成"线"、<code>port</code> 译成"港口"。三种手段叠加：</p>
+<p><strong>手段 1：术语占位（主力）</strong></p>
+<pre><code>源句: &quot;The thread pool limits concurrency.&quot;
+术语表命中: thread pool → 线程池
+替换:  &quot;The &lt;t0&gt; limits concurrency.&quot;
+推理:  &quot;该 &lt;t0&gt; 限制并发。&quot;
+还原:  &quot;该 线程池 限制并发。&quot;
+</code></pre>
+<p>命中规则：源句中出现 L4 术语（按最长匹配，2～4 词），替换为 <code>&lt;t0&gt;</code>…<code>&lt;t9&gt;</code>（最多 10 个），译后精确还原。<strong>优点</strong>：术语 100% 正确，且不增加模型负担。<strong>缺点</strong>：占位符会轻微影响语序流畅度（实测 MQM 扣 0.05 分，可接受）。</p>
+<p><strong>手段 2：后处理规则（辅助）</strong></p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>规则</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>被动生硬</td>
+<td>"被…所" → "由…"；"被…了" 保留</td>
+<td>"被系统所处理" → "由系统处理"</td>
+</tr>
+<tr>
+<td>量词缺失</td>
+<td>数字 + 名词间补量词（按名词类别表）</td>
+<td>"3 thread" → "3 个线程"</td>
+</tr>
+<tr>
+<td>重复词</td>
+<td>连续重复 2 次以上的同词合并</td>
+<td>"的的的" → "的"</td>
+</tr>
+<tr>
+<td>标点</td>
+<td>半角 → 全角（中文语境）</td>
+<td><code>,</code> → <code>，</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>手段 3：回译抽检（仅构建期评估用，运行时不跑）</strong></p>
+<p>抽样 500 句做 zh→en 回译，与原句算 BLEU；低于阈值 0.55 的句子进入人工复核清单，用于定位系统性错误。<strong>运行时绝不回译</strong>——那是双倍延迟换 3% 的质量提升，不划算。</p>
+<h3>7.7 质量目标与评测</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>语料</th>
+<th>目标</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BLEU</td>
+<td>FLORES-200 devtest（en→zh）</td>
+<td>≥ 22</td>
+<td>与公开基线对齐</td>
+</tr>
+<tr>
+<td>BLEU</td>
+<td>自建技术文档集（500 句，人工参考译文）</td>
+<td>≥ 26</td>
+<td>技术文本句式简单，应高于通用集</td>
+</tr>
+<tr>
+<td>COMET-lite</td>
+<td>同上</td>
+<td>≥ 0.62</td>
+<td>语义相似度，比 BLEU 更贴近体感</td>
+</tr>
+<tr>
+<td>术语准确率</td>
+<td>含 L4 术语的 300 句</td>
+<td>≥ 97%</td>
+<td>占位方案应接近 100%，误差来自嵌套术语</td>
+</tr>
+<tr>
+<td>人工 MQM</td>
+<td>200 句双人评分（1～5）</td>
+<td>≥ 3.8</td>
+<td>低于 3.5 判为"不可读"，需回炉</td>
+</tr>
+<tr>
+<td>致命错误率</td>
+<td>数字/否定/主体错误</td>
+<td>≤ 1.5%</td>
+<td>数字错、把"不"译丢，属致命</td>
+</tr>
+</tbody>
+</table>
+<p><strong>自建测试集的构建</strong>：从 MDN / Kubernetes 文档抽 600 句（长度 8～40 词），由 2 名英语专业 + 1 名后端工程师交叉翻译并裁决，形成参考译文。这 500～600 句是本项目最有价值的评测资产，<strong>必须纳入版本管理</strong>，每次换模型/量化方案都回归。</p>
+<h3>7.8 降级与兜底</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型文件缺失/校验失败</td>
+<td>隐藏"整句翻译"按钮，保留词条与短语翻译，设置页显示"翻译组件不可用"</td>
+</tr>
+<tr>
+<td>设备内存 &lt; 2GB 或可用内存 &lt; 400MB</td>
+<td>提示"内存不足，已关闭整句翻译"，用户可在设置中强制开启</td>
+</tr>
+<tr>
+<td>输入含大量非英文（&gt;30% 非 ASCII）</td>
+<td>提示"暂只支持中英互译"</td>
+</tr>
+<tr>
+<td>推理超时（&gt;6s）</td>
+<td>中断并提示"翻译超时，请缩短句子"，保留已译部分</td>
+</tr>
+<tr>
+<td>检测到 root/模拟器</td>
+<td>不做限制（本产品无商业化风控需求）</td>
+</tr>
+</tbody>
+</table>
+<h3>7.9 中 → 英方向</h3>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>中文无空格，需分词</td>
+<td>用 5.7 的轻量分词器，输出空格分隔后再送模型（opus-mt-zh 训练时即如此）</td>
+</tr>
+<tr>
+<td>全角标点</td>
+<td>归一化为半角</td>
+</tr>
+<tr>
+<td>数字与量词</td>
+<td>"3 个线程" → "3 threads"，需保留数字并删除量词（后处理规则）</td>
+</tr>
+<tr>
+<td>输出冠词缺失</td>
+<td>接受（v1.0 不做语法修正），UI 标注"机器翻译，仅供参考"</td>
+</tr>
+<tr>
+<td>长度膨胀</td>
+<td>英文字符数约为中文 1.8～2.2 倍，UI 需允许长文本换行</td>
+</tr>
+</tbody>
+</table>
+<h3>7.10 端上性能实测清单</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>目标</th>
+<th>实测手段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>20 词句 en→zh</td>
+<td>≤ 900ms</td>
+<td>真机 100 次采样，去首 5 次预热</td>
+</tr>
+<tr>
+<td>60 词句（切 2 句）</td>
+<td>≤ 1.8s</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>模型加载（首次）</td>
+<td>≤ 600ms</td>
+<td>懒加载，首次点翻译才加载</td>
+</tr>
+<tr>
+<td>常驻内存增量</td>
+<td>≤ 90MB</td>
+<td><code>dumpsys meminfo</code></td>
+</tr>
+<tr>
+<td>连续翻译 20 句</td>
+<td>无内存增长（±5MB）</td>
+<td>循环 20 次后对比 PSS</td>
+</tr>
+<tr>
+<td>电量</td>
+<td>30 次翻译 &lt; 1%</td>
+<td>Battery Historian</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>模型加载策略</strong>：App 启动<strong>不加载</strong>模型（会让冷启动 +400ms）。首次点"翻译"时在后台加载并显示"正在准备翻译引擎…"，加载完成后缓存 Session 直到进程结束。用户若从不翻译，永远不付这份内存。</p>
+</blockquote>
+<hr>
+<h2 id="8-android-客户端实现">8. Android 客户端实现</h2>
+<h3>8.1 技术选型</h3>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>冷启动</th>
+<th>包体</th>
+<th>原生能力（mmap/NDK）</th>
+<th>开发效率</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Kotlin + Jetpack Compose</strong></td>
+<td>350～450ms（含 Baseline Profile）</td>
+<td>+6MB</td>
+<td>直接</td>
+<td>高</td>
+<td>✅ 主选</td>
+</tr>
+<tr>
+<td>Kotlin + XML View</td>
+<td>300～380ms</td>
+<td>+2.5MB</td>
+<td>直接</td>
+<td>中</td>
+<td>备选（若 Compose 启动仍超标）</td>
+</tr>
+<tr>
+<td>Flutter</td>
+<td>500～800ms</td>
+<td>+12MB</td>
+<td>需 platform channel</td>
+<td>高</td>
+<td>❌ 启动与包体劣势</td>
+</tr>
+<tr>
+<td>React Native</td>
+<td>800ms+</td>
+<td>+15MB</td>
+<td>需 native module</td>
+<td>中</td>
+<td>❌ 不合适</td>
+</tr>
+</tbody>
+</table>
+<p><strong>选 Compose 的理由</strong>：词条页是典型的"动态结构 + 大量文本排版"，Compose 的声明式布局比 RecyclerView 多类型 Adapter 简洁一个数量级；且 2026 年 Compose 的启动开销经 Baseline Profile + R8 已可控。</p>
+<p><strong>兜底预案</strong>：若实测冷启动 &gt; 600ms，把<strong>首页搜索栏改为 XML + Activity 直接渲染</strong>（首帧不等 Compose 初始化），词条页仍用 Compose。这是 v1.0 的 Plan B，不做提前优化。</p>
+<h3>8.2 工程结构</h3>
+<pre><code>app/
+├── src/main/
+│   ├── java/com/lexforge/
+│   │   ├── LexApp.kt                    # Application，DI 容器初始化
+│   │   ├── MainActivity.kt              # 单 Activity + Compose Navigation
+│   │   ├── ProcessTextActivity.kt       # 划词入口（透明宿主）
+│   │   ├── di/AppContainer.kt           # 手写 DI（不引 Hilt，省 800KB + 编译时间）
+│   │   └── nav/Routes.kt
+│   ├── assets/                          # 所有 flavor 共用（词库、署名）
+│   │   ├── L2.lexd                      # 内置词库 11MB
+│   │   ├── L4.lexd                      # 技术术语 3.6MB
+│   │   └── notice/ATTRIBUTION.md        # 署名
+│   ├── full/assets/mt/                  # 仅 full flavor（含翻译模型的包）
+│   │   ├── model.int8.onnx              # en→zh 82MB
+│   │   └── spm.txt                      # 分词词表
+│   └── res/
+│       ├── font/Inter-subset.ttf        # 拉丁子集 180KB
+│       └── values/{strings,themes}.xml
+└── build.gradle.kts
+</code></pre>
+<p><strong>为什么手写 DI 而不上 Hilt</strong>：本项目只有 ~10 个需要注入的对象，Hilt 带来的注解处理器与运行时代码约 800KB，且拖慢增量编译。用一个 60 行的 <code>AppContainer</code> 足够，测试时直接替换构造参数。</p>
+<h3>8.3 依赖清单</h3>
+<table>
+<thead>
+<tr>
+<th>依赖</th>
+<th>版本</th>
+<th>用途</th>
+<th>体积影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kotlin</td>
+<td>2.0.21</td>
+<td>语言</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Compose BOM</td>
+<td>2024.10.01</td>
+<td>UI</td>
+<td>≈ 4.5MB</td>
+</tr>
+<tr>
+<td>Navigation Compose</td>
+<td>2.8.4</td>
+<td>路由</td>
+<td>200KB</td>
+</tr>
+<tr>
+<td>Lifecycle ViewModel Compose</td>
+<td>2.8.7</td>
+<td>状态</td>
+<td>120KB</td>
+</tr>
+<tr>
+<td>androidx.sqlite:sqlite-bundled</td>
+<td>2.4.0</td>
+<td>FTS5 保证</td>
+<td>1.6MB</td>
+</tr>
+<tr>
+<td>kotlinx-coroutines</td>
+<td>1.9.0</td>
+<td>并发</td>
+<td>150KB</td>
+</tr>
+<tr>
+<td>kotlinx-serialization-json</td>
+<td>1.7.3</td>
+<td>词条解析</td>
+<td>220KB</td>
+</tr>
+<tr>
+<td>onnxruntime-android</td>
+<td>1.20.0</td>
+<td>推理</td>
+<td>6.5～12MB（标准/轻量包通过 product flavor 排除，为 0）</td>
+</tr>
+<tr>
+<td>androidx.datastore:preferences</td>
+<td>1.1.1</td>
+<td>设置</td>
+<td>180KB</td>
+</tr>
+<tr>
+<td>JUnit5 / Turbine / Robolectric</td>
+<td>—</td>
+<td>测试</td>
+<td>0（testOnly）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>不用 Retrofit / OkHttp / Room / Coil</strong>：无网络请求，不需要 Retrofit；Room 会引入 KSP 与额外体积，直接用 <code>SQLiteDatabase</code> + 手写 DAO（生词本只有 3 张表）；本产品无网络图片，不需要图片加载库。</p>
+</blockquote>
+<h3>8.4 关键接口</h3>
+<pre><code class="language-kotlin">// core/model
+data class Entry(
+    val id: Int,
+    val headword: String,
+    val display: String,
+    val ipa: Ipa?,
+    val groups: List&lt;PosGroup&gt;,
+    val examples: List&lt;Example&gt;,
+    val forms: List&lt;String&gt;,
+    val freqRank: Int,
+    val levels: List&lt;String&gt;,
+)
+
+sealed interface LookupResult {
+    data class Exact(val entry: Entry) : LookupResult
+    data class Inflected(val entry: Entry, val matched: String, val note: String) : LookupResult
+    data class Derived(val entry: Entry, val affixes: List&lt;String&gt;) : LookupResult
+    data class Suggestions(val items: List&lt;Suggestion&gt;) : LookupResult
+    data class Fuzzy(val items: List&lt;Suggestion&gt;, val distance: Int) : LookupResult
+    data class Decomposed(val segments: List&lt;Segment&gt;) : LookupResult
+    data object NotFound : LookupResult
+}
+
+interface Lexicon {
+    fun lookup(raw: String): LookupResult           // 五级检索总入口，纯同步
+    fun suggest(prefix: String, limit: Int): List&lt;Suggestion&gt;
+    fun reverseLookup(chinese: String, limit: Int): List&lt;Suggestion&gt;
+    fun fullText(query: String, limit: Int): List&lt;Suggestion&gt;
+}
+
+interface Translator {
+    suspend fun translate(
+        text: String,
+        direction: Direction,
+        onPartial: (String) -&gt; Unit = {},
+    ): TranslationResult
+}
+
+sealed interface TranslationResult {
+    data class Ok(val text: String, val elapsedMs: Long, val mode: Mode) : TranslationResult
+    data class Fail(val reason: Reason, val partial: String?) : TranslationResult
+}
+</code></pre>
+<p><strong><code>Lexicon.lookup</code> 是同步的</strong>，这点很重要：它保证 8ms 内返回，UI 层可以直接在 <code>Dispatchers.Default</code> 上调，不必担心阻塞；测试也能直接断言返回值，无需协程。</p>
+<h3>8.5 界面规范</h3>
+<p><strong>设计基调</strong>：工具型、信息密度高、无多余装饰。参考"终端 + 排版书"的混合气质：等宽字体用于音标与代码，衬线/无衬线混排用于释义。</p>
+<p><strong>设计令牌</strong></p>
+<table>
+<thead>
+<tr>
+<th>令牌</th>
+<th>浅色</th>
+<th>深色</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bg</code></td>
+<td><code>#FAFAF8</code></td>
+<td><code>#121311</code></td>
+<td>页面底</td>
+</tr>
+<tr>
+<td><code>surface</code></td>
+<td><code>#FFFFFF</code></td>
+<td><code>#1C1E1B</code></td>
+<td>卡片</td>
+</tr>
+<tr>
+<td><code>text-primary</code></td>
+<td><code>#1A1A18</code></td>
+<td><code>#EDEDE8</code></td>
+<td>正文</td>
+</tr>
+<tr>
+<td><code>text-secondary</code></td>
+<td><code>#6B6B66</code></td>
+<td><code>#9A9A93</code></td>
+<td>音标、注释</td>
+</tr>
+<tr>
+<td><code>accent</code></td>
+<td><code>#1F6F4A</code></td>
+<td><code>#4FBF8B</code></td>
+<td>强调、命中高亮</td>
+</tr>
+<tr>
+<td><code>tag-tech</code></td>
+<td><code>#2B5C8A</code> 10% 底</td>
+<td><code>#7FB2E0</code> 15% 底</td>
+<td>"技术"义项标签</td>
+</tr>
+<tr>
+<td><code>divider</code></td>
+<td><code>#E8E8E3</code></td>
+<td><code>#2A2C28</code></td>
+<td>分隔线</td>
+</tr>
+<tr>
+<td>圆角</td>
+<td>12dp（卡片）/ 8dp（标签）/ 24dp（搜索框）</td>
+<td>同</td>
+<td>—</td>
+</tr>
+<tr>
+<td>间距</td>
+<td>4 / 8 / 12 / 16 / 24 dp 五档</td>
+<td>同</td>
+<td>—</td>
+</tr>
+<tr>
+<td>正文</td>
+<td>16sp / 行高 24sp</td>
+<td>同</td>
+<td>可调 14～22sp</td>
+</tr>
+<tr>
+<td>音标</td>
+<td>15sp 等宽</td>
+<td>同</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>首页（搜索即首页）</strong></p>
+<pre><code>┌─────────────────────────────────────┐
+│  ┌───────────────────────────────┐  │
+│  │ 🔍  输入单词或短语          ✕  │  │  ← 自动聚焦，键盘弹起
+│  └───────────────────────────────┘  │
+│                                     │
+│  idempotent                    ★   │  ← 主结果卡（命中精确/还原）
+│  /ˌaɪdəmˈpəʊtənt/  adj.  专八      │
+│  （计算）幂等的：多次执行与一次…    │
+│  ─────────────────────────────────  │
+│  idempotency                   n.  │  ← 相关词（同族）
+│  idempotently                  adv. │
+│                                     │
+│  ── 也许你想查 ──                   │
+│  idempotent · identical · impedance │
+└─────────────────────────────────────┘
+</code></pre>
+<p><strong>词条页</strong></p>
+<pre><code>┌─────────────────────────────────────┐
+│ ←  idempotent                  ★ ⋮ │
+│                                     │
+│  /ˌaɪdəmˈpəʊtənt/  🔊   专八 · 词频 18k│
+│                                     │
+│  adj.                               │
+│  1. [技术] 幂等的：多次执行与一次执行 │
+│     结果相同                        │
+│     PUT is idempotent, so retrying  │
+│     the request is safe.            │
+│     PUT 是幂等的，因此重试该请求安全。│
+│  2. [数学] 幂等的                   │
+│                                     │
+│  n.  (idempotency)                  │
+│  1. 幂等性                          │
+│                                     │
+│  ── 词形 ──                         │
+│  idempotently (adv.)                │
+│                                     │
+│  ── 相关 ──                         │
+│  #并发  #接口设计                   │
+└─────────────────────────────────────┘
+</code></pre>
+<p><strong>划词浮层（BottomSheet，60% 高度）</strong></p>
+<pre><code>┌─────────────────────────────────────┐
+│         ────                        │
+│  &quot;the request is idempotent&quot;        │
+│                                     │
+│  译文  该请求是幂等的。       ⏳ 0.7s│
+│  ─────────────────────────────────  │
+│  the      art. 这个                 │
+│  request  n.   请求  ›              │
+│  is       v.   是                    │
+│  idempotent adj. 幂等的  ›          │
+│                                     │
+│  [ 复制译文 ]  [ 打开词锋 ]          │
+└─────────────────────────────────────┘
+</code></pre>
+<h3>8.6 交互细节</h3>
+<table>
+<thead>
+<tr>
+<th>交互</th>
+<th>行为</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入即搜</td>
+<td>无"搜索"按钮，防抖 60ms</td>
+<td>减少一次点击，符合"快速查询"目标</td>
+</tr>
+<tr>
+<td>清空按钮</td>
+<td>输入框右侧 ✕，仅在有内容时出现</td>
+<td>—</td>
+</tr>
+<tr>
+<td>返回键</td>
+<td>首页按返回 = 收起键盘；再按 = 退出</td>
+<td>Android 惯例</td>
+</tr>
+<tr>
+<td>左右滑动词条页</td>
+<td>切上一词/下一词（历史顺序）</td>
+<td>连续查词场景高效</td>
+</tr>
+<tr>
+<td>长按释义</td>
+<td>复制该行文本</td>
+<td>用户常要粘到笔记里</td>
+</tr>
+<tr>
+<td>长按音标</td>
+<td>复制 IPA</td>
+<td>—</td>
+</tr>
+<tr>
+<td>双击头词</td>
+<td>加入生词本</td>
+<td>比找 ☆ 更快</td>
+</tr>
+<tr>
+<td>下拉词条页</td>
+<td>刷新（重载例句，理论上无变化，保留手势一致性）</td>
+<td>—</td>
+</tr>
+<tr>
+<td>空输入</td>
+<td>显示"最近查询" + "今日一词"（按词频从 L1 抽）</td>
+<td>填充空态</td>
+</tr>
+</tbody>
+</table>
+<h3>8.7 状态管理</h3>
+<pre><code class="language-kotlin">data class SearchUiState(
+    val query: String = &quot;&quot;,
+    val result: LookupResult? = null,
+    val suggestions: List&lt;Suggestion&gt; = emptyList(),
+    val isLoading: Boolean = false,
+    val searchMode: Mode = Mode.WORD,   // WORD / PHRASE / SENTENCE / CHINESE
+)
+
+class SearchViewModel(private val lex: Lexicon) : ViewModel() {
+    private val _state = MutableStateFlow(SearchUiState())
+    val state: StateFlow&lt;SearchUiState&gt; = _state.asStateFlow()
+
+    private val queryFlow = MutableStateFlow(&quot;&quot;)
+
+    init {
+        viewModelScope.launch {
+            queryFlow
+                .debounce(60)
+                .distinctUntilChanged()
+                .mapLatest { q -&gt; if (q.isBlank()) null else withContext(Dispatchers.Default) { lex.lookup(q) } }
+                .collect { r -&gt; _state.update { it.copy(result = r) } }
+        }
+    }
+
+    fun onQueryChange(q: String) { _state.update { it.copy(query = q) }; queryFlow.value = q }
+}
+</code></pre>
+<p><code>mapLatest</code> 保证旧查询被取消（虽然查询本身只有几毫秒，但能避免"慢查询后到覆盖新结果"的竞态）。</p>
+<h3>8.8 冷启动优化</h3>
+<table>
+<thead>
+<tr>
+<th>措施</th>
+<th>收益</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline Profile</td>
+<td>−120～200ms</td>
+<td>覆盖首页与词条页的常见路径，随 APK 附带</td>
+</tr>
+<tr>
+<td>延迟初始化</td>
+<td>−80ms</td>
+<td>不做任何磁盘扫描、不预载模型、不预建索引</td>
+</tr>
+<tr>
+<td>首帧骨架屏</td>
+<td>感知 −150ms</td>
+<td>先渲染搜索框，结果区留白</td>
+</tr>
+<tr>
+<td>禁用启动主题动画</td>
+<td>−40ms</td>
+<td><code>windowAnimationStyle</code> 置空</td>
+</tr>
+<tr>
+<td>R8 全量混淆 + 资源压缩</td>
+<td>−30ms</td>
+<td>类加载更少</td>
+</tr>
+<tr>
+<td>不在 <code>Application.onCreate</code> 做 IO</td>
+<td>−100ms</td>
+<td>走 <code>AppContainer</code> 懒加载</td>
+</tr>
+<tr>
+<td>词库 mmap 延迟到首次查询</td>
+<td>−60ms</td>
+<td>首次查询多付 20ms，可接受</td>
+</tr>
+</tbody>
+</table>
+<p><strong>测量代码</strong>：</p>
+<pre><code class="language-kotlin">// benchmark/src/main/kotlin/StartupBenchmark.kt
+@RunWith(AndroidJUnit4::class)
+class StartupBenchmark {
+    @get:Rule val rule = MacrobenchmarkRule()
+
+    @Test fun coldStart() = rule.measureRepeated(
+        packageName = &quot;com.lexforge&quot;,
+        metrics = listOf(StartupTimingMetric()),
+        iterations = 10,
+        startupMode = StartupMode.COLD,
+    ) { pressHome(); startActivityAndWait() }
+}
+</code></pre>
+<h3>8.9 无障碍与国际化</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TalkBack</td>
+<td>每个义项作为一个可聚焦节点，朗读"词性 + 序号 + 释义"；音标附带朗读标签"音标"</td>
+</tr>
+<tr>
+<td>字号</td>
+<td>跟随系统字体缩放（<code>sp</code> 全部生效），另提供应用内 4 档覆盖</td>
+</tr>
+<tr>
+<td>对比度</td>
+<td>正文对比度 ≥ 7:1，次要文本 ≥ 4.5:1</td>
+</tr>
+<tr>
+<td>触摸目标</td>
+<td>≥ 48dp</td>
+</tr>
+<tr>
+<td>深色模式</td>
+<td>跟随系统 + 手动三态</td>
+</tr>
+<tr>
+<td>语言</td>
+<td>UI 仅简体中文；词条内容固定中英混排；预留 <code>values-en</code>（v2.0）</td>
+</tr>
+<tr>
+<td>横屏/平板</td>
+<td>宽度 ≥ 600dp 时，左侧列表 + 右侧详情双栏</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="9-关键技术与坑位">9. 关键技术与坑位</h2>
+<p>这一节是从"能跑"到"能发"之间真正会卡住的地方，逐条给现象、成因、对策。</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>现象</th>
+<th>成因</th>
+<th>对策</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>assets 无法 mmap</td>
+<td><code>FileNotFoundException: This file can not be opened as a file descriptor</code></td>
+<td>AGP 默认压缩 assets 中的非媒体文件</td>
+<td><code>androidResources { noCompress += "lexd" }</code>；打包后 <code>unzip -v app.apk \| grep lexd</code> 确认为 <code>Stored</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>16KB 页对齐</td>
+<td>新设备上无法安装 / Play 拒绝</td>
+<td>Android 15 起原生库需 4KB/16KB 双对齐</td>
+<td>NDK r28+，<code>-Wl,-z,max-page-size=16384</code>；<code>zipalign -P 16</code>；用 <code>check_elf_alignment.sh</code> 校验</td>
+</tr>
+<tr>
+<td>3</td>
+<td>APK 过大无法安装</td>
+<td><code>INSTALL_FAILED_INSUFFICIENT_STORAGE</code></td>
+<td>部分机型 <code>/data</code> 分区限制</td>
+<td>主包只发 arm64；提供"轻量包"（仅 L1，无翻译模型）约 12MB</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Compose 长词条卡顿</td>
+<td>滚动掉帧</td>
+<td>单个 <code>Column</code> 内数百个文本节点</td>
+<td>用 <code>LazyColumn</code> 按 <code>pos</code> 分组为 item，<code>key</code> 稳定；避免 <code>AnnotatedString</code> 重复构造</td>
+</tr>
+<tr>
+<td>5</td>
+<td>剪贴板限制</td>
+<td>Android 10+ 后台读剪贴板返回空</td>
+<td>系统限制仅前台/默认输入法可读</td>
+<td>不做后台监听；划词走 <code>ACTION_PROCESS_TEXT</code>（合规且体验更好）</td>
+</tr>
+<tr>
+<td>6</td>
+<td>剪贴板提示</td>
+<td>每次读剪贴板弹"已复制"Toast</td>
+<td>Android 12+ 隐私提示</td>
+<td>同上，不主动读剪贴板</td>
+</tr>
+<tr>
+<td>7</td>
+<td>无障碍服务被拒审</td>
+<td>应用商店驳回</td>
+<td>无障碍权限滥用审核极严</td>
+<td>v1.0 <strong>不做</strong>无障碍取词；只用 <code>PROCESS_TEXT</code>（系统菜单），无需任何敏感权限</td>
+</tr>
+<tr>
+<td>8</td>
+<td>ORT 首次推理慢</td>
+<td>首句 3s</td>
+<td>Session 初始化 + 内存分配</td>
+<td>首次点击翻译时后台预热一次空推理（<code>[""]</code>），并显示"准备中"</td>
+</tr>
+<tr>
+<td>9</td>
+<td>ORT 线程抢占</td>
+<td>翻译时 UI 掉帧</td>
+<td>intra_op 线程占满大核</td>
+<td>3 线程 + <code>Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND)</code></td>
+</tr>
+<tr>
+<td>10</td>
+<td>R8 删掉序列化类</td>
+<td>词条解析返回 null</td>
+<td>kotlinx.serialization 依赖反射/生成代码</td>
+<td>保留 <code>@Serializable</code> 类的 <code>Companion</code> 与 <code>$$serializer</code>；加 keep 规则</td>
+</tr>
+<tr>
+<td>11</td>
+<td>zstd 原生库崩溃</td>
+<td>低端机 SIGILL</td>
+<td>使用了 armv7 不支持的指令集</td>
+<td>只发 arm64；或换纯 Java Deflater（体积 +20%）</td>
+</tr>
+<tr>
+<td>12</td>
+<td>词库校验耗时</td>
+<td>启动卡 300ms</td>
+<td>全文件 CRC 校验</td>
+<td>只校验 header + 段表 CRC（&lt; 2ms），全文 CRC 放到后台线程</td>
+</tr>
+<tr>
+<td>13</td>
+<td>生词本写入丢数据</td>
+<td>杀进程后收藏丢失</td>
+<td>未用事务/WAL</td>
+<td>开启 WAL，<code>beginTransaction</code> 批量写</td>
+</tr>
+<tr>
+<td>14</td>
+<td>深色模式闪白</td>
+<td>切换主题瞬间白屏</td>
+<td>Activity 重建时机</td>
+<td><code>enableEdgeToEdge()</code> + 主题在 <code>setContent</code> 前读取 DataStore 缓存值</td>
+</tr>
+<tr>
+<td>15</td>
+<td>折叠屏布局错乱</td>
+<td>展开后内容被拉伸</td>
+<td>固定 dp 宽度</td>
+<td>用 <code>WindowSizeClass</code> 做响应式；最大内容宽 720dp 居中</td>
+</tr>
+<tr>
+<td>16</td>
+<td>中文输入法组合态</td>
+<td>拼音未上屏就触发查询</td>
+<td><code>onValueChange</code> 收到组合文本</td>
+<td>检查 <code>TextFieldValue.composition != null</code> 时跳过查询</td>
+</tr>
+<tr>
+<td>17</td>
+<td>应用被后台杀死</td>
+<td>划词返回后状态丢失</td>
+<td>内存压力</td>
+<td><code>ProcessTextActivity</code> 独立、轻量；结果页状态用 <code>SavedStateHandle</code></td>
+</tr>
+<tr>
+<td>18</td>
+<td>例句含 HTML 实体</td>
+<td>显示 <code>&amp;amp;</code></td>
+<td>源数据未解码</td>
+<td>构建期统一 <code>html.unescape()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>坑 1 的验证命令</strong>（发布前必跑）：</p>
+<pre><code class="language-bash"># 确认 lexd 未压缩
+unzip -v app-release.apk | grep -E &quot;lexd|onnx&quot; | awk '{print $2, $8}'
+# 期望输出含 &quot;Stored&quot;
+
+# 确认 16KB 对齐
+$ANDROID_NDK/toolchains/llvm/prebuilt/*/bin/llvm-readelf -l lib/arm64-v8a/libonnxruntime.so | grep LOAD
+# 期望 Align 为 0x4000
+</code></pre>
+<p><strong>坑 2 的 Gradle 配置</strong>：</p>
+<pre><code class="language-kotlin">android {
+    packaging {
+        jniLibs { useLegacyPackaging = false }   // 必须 false，才能 16KB 对齐
+    }
+}
+</code></pre>
+<hr>
+<h2 id="10-系统集成">10. 系统集成</h2>
+<h3>10.1 划词翻译（核心能力，必须做对）</h3>
+<p><strong>原理</strong>：Android 6.0+ 的 <code>ACTION_PROCESS_TEXT</code>，任何支持文本选择的 App 都会在菜单里列出注册了该 action 的应用，<strong>不需要任何敏感权限</strong>。</p>
+<pre><code class="language-xml">&lt;activity
+    android:name=&quot;.ProcessTextActivity&quot;
+    android:exported=&quot;true&quot;
+    android:theme=&quot;@style/Theme.Transparent&quot;
+    android:excludeFromRecents=&quot;true&quot;&gt;
+    &lt;intent-filter&gt;
+        &lt;action android:name=&quot;android.intent.action.PROCESS_TEXT&quot; /&gt;
+        &lt;category android:name=&quot;android.intent.category.DEFAULT&quot; /&gt;
+        &lt;data android:mimeType=&quot;text/plain&quot; /&gt;
+    &lt;/intent-filter&gt;
+&lt;/activity&gt;
+</code></pre>
+<pre><code class="language-kotlin">class ProcessTextActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString().orEmpty()
+        val readOnly = intent.getBooleanExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, false)
+        setContent { LexTheme { TranslateSheet(text, editable = !readOnly) } }
+    }
+}
+</code></pre>
+<p><strong>三个细节</strong>：</p>
+<ol>
+<li><strong>透明主题 + 半屏</strong>：不要全屏跳转，用 <code>BottomSheet</code> 样式，用户下滑即回到原 App，上下文不丢。</li>
+<li><strong>回填</strong>：若 <code>READONLY = false</code>，提供"替换为译文"按钮，<code>setResult(RESULT_OK, Intent().putExtra(EXTRA_PROCESS_TEXT, translated))</code>，部分 App（如笔记类）支持直接替换。</li>
+<li><strong>冷启动代价</strong>：从别的 App 唤起时词锋可能是冷启动，必须在 500ms 内显示"正在查询"骨架，否则用户以为没反应。实测：透明 Activity + 直接 Compose 渲染，冷启动 420ms。</li>
+</ol>
+<h3>10.2 分享接收</h3>
+<pre><code class="language-xml">&lt;intent-filter&gt;
+    &lt;action android:name=&quot;android.intent.action.SEND&quot; /&gt;
+    &lt;category android:name=&quot;android.intent.category.DEFAULT&quot; /&gt;
+    &lt;data android:mimeType=&quot;text/plain&quot; /&gt;
+&lt;/intent-filter&gt;
+</code></pre>
+<p>分享文本后直接进查询页；若文本 &gt; 8 词，自动切到"翻译"Tab。</p>
+<h3>10.3 悬浮球 / 无障碍取词（P2，不做）</h3>
+<p>技术上可行（<code>AccessibilityService</code> + <code>WindowManager</code> 悬浮球 + <code>getWindows()</code> 取节点文本），但：</p>
+<ul>
+<li>应用商店对无障碍权限审核极严，个人开发者几乎必被驳回；</li>
+<li>用户对"无障碍权限"高度警惕，转化率低；</li>
+<li>与"零权限、纯本地"的产品叙事冲突。</li>
+</ul>
+<p><strong>结论</strong>：v1.0 不做。若后续确需，只作为"侧载版专属功能"，且明确告知权限用途。</p>
+<h3>10.4 快捷方式与小组件</h3>
+<table>
+<thead>
+<tr>
+<th>能力</th>
+<th>实现</th>
+<th>价值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>长按图标快捷方式</td>
+<td><code>shortcuts.xml</code>：新建查询 / 生词本 / 历史</td>
+<td>中</td>
+</tr>
+<tr>
+<td>桌面小组件（4×1 搜索条）</td>
+<td><code>AppWidgetProvider</code> + <code>RemoteViews</code> 输入框受限，改为"点击打开查询"</td>
+<td>低，v1.1</td>
+</tr>
+<tr>
+<td>通知栏常驻（P2）</td>
+<td>不建议，工具类 App 常驻通知易被反感</td>
+<td>不做</td>
+</tr>
+</tbody>
+</table>
+<h3>10.5 发音</h3>
+<pre><code class="language-kotlin">class Speaker(private val ctx: Context) {
+    private var tts: TextToSpeech? = null
+
+    fun speak(word: String, accent: Locale = Locale.UK): Result&lt;Unit&gt; {
+        tts ?: run {
+            var engine: TextToSpeech? = null
+            val latch = CountDownLatch(1)
+            engine = TextToSpeech(ctx) { status -&gt;
+                if (status == TextToSpeech.SUCCESS) engine?.language = accent
+                latch.countDown()
+            }
+            if (!latch.await(800, TimeUnit.MILLISECONDS)) return Result.failure(NoEngine)
+            tts = engine
+        }
+        return if (tts!!.setLanguage(accent) &gt;= 0) {
+            tts!!.speak(word, TextToSpeech.QUEUE_FLUSH, null, word); Result.success(Unit)
+        } else Result.failure(NoVoice)
+    }
+}
+</code></pre>
+<p><strong>降级链</strong>：系统 TTS（英音）→ 系统 TTS（默认）→ 无引擎则仅显示 IPA，Toast 提示"未安装语音引擎，可在系统设置中安装"。</p>
+<blockquote>
+<p><strong>不用 espeak-ng</strong>：GPLv3，链接进 APK 会要求整个应用开源。若确需自带引擎，选 Apache-2.0 的方案或独立进程调用（复杂且收益低）。v1.0 只依赖系统 TTS。</p>
+</blockquote>
+<h3>10.6 生词本与导出</h3>
+<p><strong>表结构</strong>（详见附录 A）：</p>
+<pre><code class="language-sql">CREATE TABLE notebook (
+  lemma_id   INTEGER PRIMARY KEY,
+  headword   TEXT NOT NULL,
+  added_at   INTEGER NOT NULL,
+  tags       TEXT,            -- 逗号分隔
+  stage      INTEGER DEFAULT 0,   -- SM-2 记忆阶段 0..7
+  due_at     INTEGER,             -- 下次复习时间
+  note       TEXT                 -- 用户备注
+);
+</code></pre>
+<p><strong>SM-2 简化版</strong>：</p>
+<pre><code>复习时用户选：忘记 / 模糊 / 记得
+  忘记 → stage = max(0, stage-2), due = now + 10min
+  模糊 → stage 不变,            due = now + 1d  * (1.2 ^ stage)
+  记得 → stage = min(7, stage+1), due = now + 1d  * (2.5 ^ stage)
+</code></pre>
+<p><strong>导出 CSV</strong>：</p>
+<pre><code class="language-csv">headword,pos,definition,added_at,tags
+idempotent,adj.,（计算）幂等的,2026-10-20,#并发
+</code></pre>
+<p>用 UTF-8 with BOM 写，Excel 直接双击不乱码。同时提供"分享到 AnkiDroid"（<code>ACTION_SEND</code> + <code>text/csv</code>），AnkiDroid 可直接导入。</p>
+<h3>10.7 权限清单（最终）</h3>
+<pre><code class="language-xml">&lt;!-- 一个都不需要 --&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>权限</th>
+<th>是否需要</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>INTERNET</td>
+<td>❌</td>
+<td>核心卖点：无网络权限</td>
+</tr>
+<tr>
+<td>ACCESS_NETWORK_STATE</td>
+<td>❌</td>
+<td>—</td>
+</tr>
+<tr>
+<td>READ/WRITE_EXTERNAL_STORAGE</td>
+<td>❌</td>
+<td>扩展词库导入用 SAF（<code>ACTION_OPEN_DOCUMENT</code>），不需要存储权限</td>
+</tr>
+<tr>
+<td>RECORD_AUDIO</td>
+<td>❌</td>
+<td>无语音输入</td>
+</tr>
+<tr>
+<td>SYSTEM_ALERT_WINDOW</td>
+<td>❌</td>
+<td>无悬浮球</td>
+</tr>
+<tr>
+<td>BIND_ACCESSIBILITY_SERVICE</td>
+<td>❌</td>
+<td>无障碍取词不做</td>
+</tr>
+<tr>
+<td>POST_NOTIFICATIONS</td>
+<td>❌</td>
+<td>无推送、无提醒</td>
+</tr>
+</tbody>
+</table>
+<h2 id="gt-这是本产品最重要的工程约束之一零权限任何新功能若需要新增权限必须在评审时说明不可替代性">&gt; 这是本产品最重要的工程约束之一：<strong>零权限</strong>。任何新功能若需要新增权限，必须在评审时说明不可替代性。</h2>
+<h2 id="11-测试与质量">11. 测试与质量</h2>
+<h3>11.1 测试金字塔</h3>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>范围</th>
+<th>工具</th>
+<th>数量目标</th>
+<th>运行时机</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单元测试</td>
+<td>归一化、词形还原、拆词、索引、SymSpell、分词器</td>
+<td>JUnit5 + kotlin.test</td>
+<td>≥ 320 例</td>
+<td>每次提交</td>
+</tr>
+<tr>
+<td>集成测试</td>
+<td>词库包读取 + 检索链路（真包，非 mock）</td>
+<td>JUnit5 + Robolectric</td>
+<td>≥ 60 例</td>
+<td>每次提交</td>
+</tr>
+<tr>
+<td>UI 测试</td>
+<td>首页、词条页、划词浮层</td>
+<td>Compose UI Test</td>
+<td>≥ 25 例</td>
+<td>每日构建</td>
+</tr>
+<tr>
+<td>性能基准</td>
+<td>启动、查词、翻译</td>
+<td>Macrobenchmark + JMH</td>
+<td>12 项</td>
+<td>每日构建</td>
+</tr>
+<tr>
+<td>质量评估</td>
+<td>词条准确性、翻译质量</td>
+<td>Python 脚本 + 人工</td>
+<td>500 + 200 句</td>
+<td>每次换词库/模型</td>
+</tr>
+<tr>
+<td>手工探索</td>
+<td>兼容性、无障碍、异常路径</td>
+<td>真机矩阵</td>
+<td>每版</td>
+<td>发版前</td>
+</tr>
+</tbody>
+</table>
+<h3>11.2 单元测试清单</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>用例要点</th>
+<th>示例断言</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>归一化</td>
+<td>全角/半角、连字符、撇号、尾部标点、超长截断</td>
+<td><code>normalize("Running,") == "running"</code></td>
+</tr>
+<tr>
+<td>词形还原</td>
+<td>规则 6 类 + 不规则 300 例 + 白名单防误伤</td>
+<td><code>lemma("news") == null</code>（不还原成 new）</td>
+</tr>
+<tr>
+<td>派生剥离</td>
+<td>1 层/2 层/放弃三层行为</td>
+<td><code>deriv("unbelievable") == ["un-","believable"]</code></td>
+</tr>
+<tr>
+<td>标识符拆词</td>
+<td>camel/snake/kebab/缩写/数字 6 类</td>
+<td><code>split("HTTPStatusCode") == ["HTTP","Status","Code"]</code></td>
+</tr>
+<tr>
+<td>索引</td>
+<td>命中、未命中、块边界、首词/末词、空包</td>
+<td>10 万随机词全量比对线性查找结果</td>
+</tr>
+<tr>
+<td>SymSpell</td>
+<td>6 个典型拼写错误 + 无误伤（<code>form</code> 不纠成 <code>from</code>）</td>
+<td>Top1 命中率 ≥ 90%</td>
+</tr>
+<tr>
+<td>短语</td>
+<td>最长匹配、回退、跨块</td>
+<td><code>"give up on"</code> 优先于 <code>"give up"</code></td>
+</tr>
+<tr>
+<td>分词器</td>
+<td>中英混排、标点、空串</td>
+<td><code>tokenize("幂等的") == ["幂","等","的"]</code> 或按词表</td>
+</tr>
+<tr>
+<td>序列化</td>
+<td>词条 JSON 反序列化字段完整</td>
+<td>500 条 golden 比对</td>
+</tr>
+<tr>
+<td>缓存</td>
+<td>LRU 淘汰、并发访问</td>
+<td>多线程 1000 次无异常</td>
+</tr>
+</tbody>
+</table>
+<h3>11.3 性能基准与阈值</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>方法</th>
+<th>阈值</th>
+<th>超阈值动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>冷启动</td>
+<td>Macrobenchmark × 10，取 P95</td>
+<td>≤ 400ms</td>
+<td>阻塞发版</td>
+</tr>
+<tr>
+<td>查词 P95</td>
+<td>1 万条真实查询</td>
+<td>≤ 8ms</td>
+<td>阻塞发版</td>
+</tr>
+<tr>
+<td>查词 P99</td>
+<td>同上</td>
+<td>≤ 20ms</td>
+<td>记录，下版修</td>
+</tr>
+<tr>
+<td>联想 P95</td>
+<td>3 字符前缀，1000 次</td>
+<td>≤ 30ms</td>
+<td>阻塞发版</td>
+</tr>
+<tr>
+<td>翻译 20 词</td>
+<td>真机 100 次</td>
+<td>≤ 900ms</td>
+<td>记录，允许 10% 超出</td>
+</tr>
+<tr>
+<td>内存峰值</td>
+<td>查词/翻译各测</td>
+<td>120MB / 260MB</td>
+<td>阻塞发版</td>
+</tr>
+<tr>
+<td>APK 体积</td>
+<td><code>apkanalyzer</code></td>
+<td>标准包 ≤ 45MB</td>
+<td>记录</td>
+</tr>
+</tbody>
+</table>
+<p><strong>基准数据必须版本化</strong>：每版把 <code>bench/results/vX.Y.csv</code> 提交到仓库，形成性能趋势曲线，避免"某次重构悄悄慢 30%"。</p>
+<h3>11.4 词库质量校验（golden test）</h3>
+<p><code>data/golden/entries_500.json</code> 是 500 个人工校对过的词条，覆盖：</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>条数</th>
+<th>校验重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>技术高频词</td>
+<td>150</td>
+<td>技术义项是否排第一、译法是否为工程惯用</td>
+</tr>
+<tr>
+<td>一词多义</td>
+<td>120</td>
+<td>义项顺序、词性分组是否正确</td>
+</tr>
+<tr>
+<td>不规则变形</td>
+<td>80</td>
+<td>变形是否指向正确原形</td>
+</tr>
+<tr>
+<td>短语/习语</td>
+<td>80</td>
+<td>是否被短语表收录、拆分是否正确</td>
+</tr>
+<tr>
+<td>边界词</td>
+<td>70</td>
+<td>大小写、连字符、缩写、专名</td>
+</tr>
+</tbody>
+</table>
+<p><strong>判定</strong>：字段级逐项比对，错误率 ≤ 1% 通过；技术义项排序错误单列统计，≤ 2%。</p>
+<h3>11.5 翻译质量评估流程</h3>
+<pre><code>① 自动指标（每次换模型/量化方案必跑）
+   FLORES-200 devtest 1012 句 → BLEU / chrF
+   自建技术集 500 句 → BLEU / COMET-lite
+   阈值：BLEU(自建) ≥ 26，COMET ≥ 0.62，否则不合并
+
+② 术语专项（300 句，含 L4 术语）
+   脚本比对：译文中是否出现期望术语的中文
+   阈值：准确率 ≥ 97%
+
+③ 致命错误扫描（1012 句）
+   正则 + 规则：数字是否一致、否定词是否保留、主语是否错位
+   阈值：致命错误率 ≤ 1.5%
+
+④ 人工 MQM（200 句，双人独立评分，分歧由第三人裁决）
+   1～5 分，标注错误类型（术语/语法/漏译/冗余/语序）
+   阈值：平均 ≥ 3.8，且致命错误 0
+</code></pre>
+<p><strong>错误类型分布要留档</strong>：如果 60% 的错误都是"术语"，说明占位术语表覆盖不足；如果集中在"长句漏译"，说明分句策略要调。这比一个总分有用得多。</p>
+<h3>11.6 设备矩阵</h3>
+<table>
+<thead>
+<tr>
+<th>档位</th>
+<th>样机</th>
+<th>重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>低端</td>
+<td>4GB / Android 8.0（如 Redmi 8A）</td>
+<td>冷启动、OOM、翻译是否可关闭</td>
+</tr>
+<tr>
+<td>低端</td>
+<td>3GB / Android 10</td>
+<td>极端内存场景</td>
+</tr>
+<tr>
+<td>中端</td>
+<td>8GB / Android 13（骁龙 7 系）</td>
+<td>主力性能基线</td>
+</tr>
+<tr>
+<td>高端</td>
+<td>12GB / Android 15（骁龙 8 系）</td>
+<td>16KB 页对齐、新特性</td>
+</tr>
+<tr>
+<td>折叠</td>
+<td>内屏 7.6"</td>
+<td>布局自适应</td>
+</tr>
+<tr>
+<td>平板</td>
+<td>10" 横屏</td>
+<td>双栏布局</td>
+</tr>
+<tr>
+<td>特殊</td>
+<td>无 GMS 设备</td>
+<td>TTS 缺失降级路径</td>
+</tr>
+</tbody>
+</table>
+<h3>11.7 稳定性</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>目标</th>
+<th>手段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>崩溃率</td>
+<td>≤ 0.5% Session</td>
+<td>全局 <code>Thread.setDefaultUncaughtExceptionHandler</code> 记录到本地文件，供用户导出</td>
+</tr>
+<tr>
+<td>ANR</td>
+<td>≤ 0.1%</td>
+<td>主线程禁止任何 IO/解析；查词不在主线程</td>
+</tr>
+<tr>
+<td>词库损坏恢复</td>
+<td>100%</td>
+<td>header/段表 CRC 校验失败 → 提示并降级到 L1，或引导重新导入</td>
+</tr>
+<tr>
+<td>数据库损坏</td>
+<td>100% 可恢复</td>
+<td>捕获 <code>SQLiteDatabaseCorruptException</code> → 备份并重建空库</td>
+</tr>
+<tr>
+<td>重复启动</td>
+<td>无副作用</td>
+<td>划词 Activity 用 <code>singleTop</code></td>
+</tr>
+</tbody>
+</table>
+<h3>11.8 测试用例表（节选）</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>场景</th>
+<th>步骤</th>
+<th>期望</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TC-01</td>
+<td>精确查词</td>
+<td>输入 <code>run</code></td>
+<td>100ms 内出词条，词性分组正确</td>
+</tr>
+<tr>
+<td>TC-02</td>
+<td>词形还原</td>
+<td>输入 <code>ran</code></td>
+<td>命中 <code>run</code>，顶部提示"ran 是 run 的过去式"</td>
+</tr>
+<tr>
+<td>TC-03</td>
+<td>白名单防误伤</td>
+<td>输入 <code>news</code></td>
+<td>直接命中 <code>news</code>，不提示还原为 <code>new</code></td>
+</tr>
+<tr>
+<td>TC-04</td>
+<td>派生剥离</td>
+<td>输入 <code>unbelievable</code>（未收录）</td>
+<td>提示"可能是 un- + believable"，可点达</td>
+</tr>
+<tr>
+<td>TC-05</td>
+<td>标识符</td>
+<td>输入 <code>getUserById</code></td>
+<td>4 段拆词，<code>by</code> 不被误译为"被"优先</td>
+</tr>
+<tr>
+<td>TC-06</td>
+<td>短语</td>
+<td>输入 <code>race condition</code></td>
+<td>短语卡置顶，译文"竞态条件"</td>
+</tr>
+<tr>
+<td>TC-07</td>
+<td>模糊</td>
+<td>输入 <code>idempotnet</code></td>
+<td>首候选 <code>idempotent</code></td>
+</tr>
+<tr>
+<td>TC-08</td>
+<td>中文反查</td>
+<td>输入"竞态"</td>
+<td>首条 <code>race condition</code></td>
+</tr>
+<tr>
+<td>TC-09</td>
+<td>空结果</td>
+<td>输入 <code>zzzzqqq</code></td>
+<td>兜底页：拆词（空）+ "未收录"+"试试翻译"</td>
+</tr>
+<tr>
+<td>TC-10</td>
+<td>划词</td>
+<td>在 Chrome 选中一句 → 菜单「词锋」</td>
+<td>600ms 内浮层出现，逐词 + 译文</td>
+</tr>
+<tr>
+<td>TC-11</td>
+<td>划词回填</td>
+<td>在笔记 App 选中 → 替换为译文</td>
+<td>原文被替换，返回后光标位置正确</td>
+</tr>
+<tr>
+<td>TC-12</td>
+<td>翻译取消</td>
+<td>点翻译后立刻返回</td>
+<td>任务取消，无崩溃，无内存泄漏</td>
+</tr>
+<tr>
+<td>TC-13</td>
+<td>飞行模式</td>
+<td>开启飞行模式，全流程走一遍</td>
+<td>全部功能可用</td>
+</tr>
+<tr>
+<td>TC-14</td>
+<td>权限检查</td>
+<td><code>aapt dump permissions</code></td>
+<td>输出中无 INTERNET</td>
+</tr>
+<tr>
+<td>TC-15</td>
+<td>生词本</td>
+<td>收藏 3 词 → 杀进程 → 重启</td>
+<td>3 词仍在，顺序正确</td>
+</tr>
+<tr>
+<td>TC-16</td>
+<td>导出</td>
+<td>导出 20 词 CSV → Excel 打开</td>
+<td>中文不乱码，列对齐</td>
+</tr>
+<tr>
+<td>TC-17</td>
+<td>扩展词库</td>
+<td>导入合法 .lexd</td>
+<td>提示成功，新词可查</td>
+</tr>
+<tr>
+<td>TC-18</td>
+<td>扩展词库异常</td>
+<td>导入损坏 .lexd</td>
+<td>提示"文件损坏"，不影响内置词库</td>
+</tr>
+<tr>
+<td>TC-19</td>
+<td>深色模式</td>
+<td>切换三态</td>
+<td>无闪白，颜色正确</td>
+</tr>
+<tr>
+<td>TC-20</td>
+<td>字号</td>
+<td>调到超大</td>
+<td>布局不截断，可滚动</td>
+</tr>
+<tr>
+<td>TC-21</td>
+<td>折叠屏</td>
+<td>展开/折叠</td>
+<td>布局不重叠，双栏切换正常</td>
+</tr>
+<tr>
+<td>TC-22</td>
+<td>TalkBack</td>
+<td>开启读屏，走查首页与词条页</td>
+<td>全部可聚焦，语义正确</td>
+</tr>
+<tr>
+<td>TC-23</td>
+<td>低内存</td>
+<td>低端机连续翻译 20 句</td>
+<td>无 OOM，内存稳定</td>
+</tr>
+<tr>
+<td>TC-24</td>
+<td>词库损坏</td>
+<td>篡改 L2.lexd 段表 CRC</td>
+<td>启动自检发现，降级到 L1</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="12-构建签名与发布">12. 构建、签名与发布</h2>
+<h3>12.1 Gradle 关键配置</h3>
+<pre><code class="language-kotlin">// app/build.gradle.kts（节选，只列对本项目有实质影响的配置）
+android {
+    namespace = &quot;com.lexforge&quot;
+    compileSdk = 35
+    defaultConfig {
+        applicationId = &quot;com.lexforge&quot;
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = &quot;1.0.0&quot;
+        ndk { abiFilters += listOf(&quot;arm64-v8a&quot;) }
+        resourceConfigurations += listOf(&quot;zh-rCN&quot;, &quot;en&quot;)
+    }
+
+    // 关键 1：lexd / onnx 必须不压缩，否则无法 mmap
+    androidResources {
+        noCompress += listOf(&quot;lexd&quot;, &quot;onnx&quot;, &quot;txt&quot;)
+    }
+
+    // 关键 2：原生库对齐（16KB 页）
+    packaging {
+        jniLibs { useLegacyPackaging = false }
+        resources.excludes += setOf(&quot;META-INF/*.version&quot;, &quot;META-INF/LICENSE*&quot;)
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile(&quot;proguard-android-optimize.txt&quot;), &quot;proguard-rules.pro&quot;)
+            signingConfig = signingConfigs.getByName(&quot;release&quot;)
+        }
+        debug { applicationIdSuffix = &quot;.debug&quot; }
+    }
+
+    // 关键 3：三种包型 —— 差异只在 assets 与&quot;是否含推理依赖&quot;
+    flavorDimensions += &quot;size&quot;
+    productFlavors {
+        create(&quot;full&quot;)     { dimension = &quot;size&quot; }                        // 含模型 + ORT
+        create(&quot;standard&quot;) { dimension = &quot;size&quot; }                        // 含 L2+L4，无模型
+        create(&quot;lite&quot;)     { dimension = &quot;size&quot;; versionNameSuffix = &quot;-lite&quot; }
+    }
+
+    // 关键 4：Baseline Profile 随包附带
+    baselineProfile { automaticGenerationDuringBuild = false }
+    dependencies {
+        &quot;fullImplementation&quot;(&quot;com.microsoft.onnxruntime:onnxruntime-android:1.20.0&quot;)
+        &quot;fullImplementation&quot;(project(&quot;:core:mt&quot;))
+        baselineProfile(project(&quot;:benchmark&quot;))
+    }
+}
+</code></pre>
+<pre><code class="language-proguard"># kotlinx.serialization
+-keepattributes *Annotation*, InnerClasses
+-keepclassmembers class com.lexforge.core.model.** { *; }
+-keepclassmembers @kotlinx.serialization.Serializable class ** { *** Companion; }
+-keepclasseswithmembers class ** { kotlinx.serialization.KSerializer serializer(...); }
+
+# ONNX Runtime 的 JNI 入口不能被改名
+-keep class ai.onnxruntime.** { *; }
+</code></pre>
+<h3>12.2 包体控制的三道闸</h3>
+<table>
+<thead>
+<tr>
+<th>闸门</th>
+<th>措施</th>
+<th>效果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>依赖闸</td>
+<td>禁 Room/Retrofit/Hilt/OkHttp；引入新依赖须说明体积</td>
+<td>−3MB</td>
+</tr>
+<tr>
+<td>资源闸</td>
+<td>字体子集化（只留拉丁+ IPA 字符）、<code>shrinkResources</code>、去多语言</td>
+<td>−2.5MB</td>
+</tr>
+<tr>
+<td>原生闸</td>
+<td>只发 arm64；ORT 用 <code>onnxruntime-android</code>（非 full）</td>
+<td>−8MB（对比 universal）</td>
+</tr>
+</tbody>
+</table>
+<h3>12.3 签名与版本</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>方案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>签名</td>
+<td>自有 keystore（<code>lexforge-release.jks</code>），v2 + v3 签名，存于密码库（不进仓库）</td>
+</tr>
+<tr>
+<td>密钥丢失风险</td>
+<td>生成后立即做 2 份离线备份（加密 U 盘 + 纸质助记），<strong>丢失即无法覆盖升级</strong></td>
+</tr>
+<tr>
+<td>versionCode 策略</td>
+<td>单调递增，格式 <code>主*10000 + 次*100 + 修订</code>，如 1.0.0 → 10000</td>
+</tr>
+<tr>
+<td>packVer 策略</td>
+<td>词库独立版本号，YMMDD 格式（如 20261027），与 App 版本解耦</td>
+</tr>
+<tr>
+<td>渠道</td>
+<td>自有站点 / 应用宝 / 酷安；不依赖 GMS</td>
+</tr>
+</tbody>
+</table>
+<h3>12.4 分发形态</h3>
+<table>
+<thead>
+<tr>
+<th>包</th>
+<th>内容</th>
+<th>体积</th>
+<th>面向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lexforge-1.0.0-full-arm64.apk</code></td>
+<td>完整包（L2 + L4 + en→zh 模型）</td>
+<td>≈ 118MB</td>
+<td>需要整句翻译的用户</td>
+</tr>
+<tr>
+<td><code>lexforge-1.0.0-arm64.apk</code></td>
+<td>标准包（L2 + L4，无模型，仅词条/短语级翻译）</td>
+<td>≈ 36MB</td>
+<td>默认推荐，大多数人</td>
+</tr>
+<tr>
+<td><code>lexforge-1.0.0-lite.apk</code></td>
+<td>轻量包（L1 + L4，无模型）</td>
+<td>≈ 20MB</td>
+<td>存储紧张 / 低端机</td>
+</tr>
+<tr>
+<td><code>lexforge-1.0.0-universal.apk</code></td>
+<td>标准包 + armeabi-v7a</td>
+<td>≈ 44MB</td>
+<td>老设备兜底</td>
+</tr>
+<tr>
+<td><code>lexforge-ext-L3.lexd</code></td>
+<td>扩展词库 40 万</td>
+<td>≈ 60MB</td>
+<td>按需侧载</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>三种包同签名、同 applicationId</strong>，可互相覆盖安装，用户数据（生词本/历史）不丢。商店页必须用一句话讲清差异：<strong>"标准包查词，完整包带整句翻译"</strong>。</p>
+<p><strong>不做 Play 上架</strong>（v1.0）：Play 对 targetSdk、16KB 对齐、数据安全表单要求严格，且需要 Google 账号与付费开发者资格。先走自有分发 + 国内商店，等稳定性数据齐了再上 Play（届时须复核 12.5 的全部条目）。</p>
+</blockquote>
+<h3>12.5 发布检查清单</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>检查项</th>
+<th>通过标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>权限清单</td>
+<td>仅 0 个权限，<code>aapt dump permissions</code> 为空</td>
+</tr>
+<tr>
+<td>2</td>
+<td>词库校验</td>
+<td><code>08_verify.py</code> 通过，错误率 ≤ 1%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>覆盖率</td>
+<td>技术文档集 C_eff ≥ 98.0%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>翻译质量</td>
+<td>自建集 BLEU ≥ 26，术语准确率 ≥ 97%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>冷启动</td>
+<td>Macrobenchmark P95 ≤ 400ms</td>
+</tr>
+<tr>
+<td>6</td>
+<td>查词性能</td>
+<td>P95 ≤ 8ms</td>
+</tr>
+<tr>
+<td>7</td>
+<td>内存</td>
+<td>查词 ≤ 120MB，翻译 ≤ 260MB</td>
+</tr>
+<tr>
+<td>8</td>
+<td>体积</td>
+<td>标准包 ≤ 45MB；完整包 ≤ 125MB</td>
+</tr>
+<tr>
+<td>9</td>
+<td>16KB 对齐</td>
+<td><code>llvm-readelf</code> 校验通过</td>
+</tr>
+<tr>
+<td>10</td>
+<td>混淆后功能</td>
+<td>release 包全流程走查（重点：序列化、ORT）</td>
+</tr>
+<tr>
+<td>11</td>
+<td>低端机</td>
+<td>4GB Android 8 可用，无 OOM</td>
+</tr>
+<tr>
+<td>12</td>
+<td>飞行模式</td>
+<td>全功能可用</td>
+</tr>
+<tr>
+<td>13</td>
+<td>崩溃率</td>
+<td>内测 7 天 ≤ 0.5%</td>
+</tr>
+<tr>
+<td>14</td>
+<td>署名</td>
+<td>设置页「开源与数据来源」完整列出（4.1 全部采用项）</td>
+</tr>
+<tr>
+<td>15</td>
+<td>隐私政策</td>
+<td>明确"不收集任何数据、无网络权限"</td>
+</tr>
+</tbody>
+</table>
+<h3>12.6 隐私与合规</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>个人信息收集</td>
+<td><strong>零收集</strong>。无账号、无埋点、无崩溃上报到服务器</td>
+</tr>
+<tr>
+<td>网络权限</td>
+<td>无，可在系统设置中验证</td>
+</tr>
+<tr>
+<td>剪贴板</td>
+<td>不主动读取；用户主动划词才处理，且不上传</td>
+</tr>
+<tr>
+<td>生词本/历史</td>
+<td>仅存本地 SQLite，卸载即删</td>
+</tr>
+<tr>
+<td>数据授权</td>
+<td>4.1 表格逐项落实，署名文本写入 <code>assets/notice/ATTRIBUTION.md</code> 及设置页</td>
+</tr>
+<tr>
+<td>CC BY 4.0（opus-mt）</td>
+<td>必须署名模型作者与许可，且不得暗示背书</td>
+</tr>
+<tr>
+<td>MIT（ECDICT 代码部分）</td>
+<td>保留版权声明</td>
+</tr>
+<tr>
+<td>儿童隐私</td>
+<td>不面向儿童，无收集</td>
+</tr>
+<tr>
+<td>广告</td>
+<td>无</td>
+</tr>
+</tbody>
+</table>
+<p><strong>署名页文案（示例）</strong>：</p>
+<pre><code>本应用包含以下开放数据与模型：
+· 词典数据基于 ECDICT（MIT），部分释义经本项目改写与重排
+· 例句部分来自 Tatoeba（CC BY 2.0 FR），已标注来源
+· 翻译模型 Helsinki-NLP/opus-mt-en-zh（CC BY 4.0），
+  由 Helsinki-NLP 训练，本项目仅做量化与端上部署
+· 词频数据 wordfreq（Apache-2.0）
+本应用不收集任何用户数据，不请求网络权限。
+</code></pre>
+<hr>
+<h2 id="13-排期与人力">13. 排期与人力</h2>
+<h3>13.1 团队配置</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>人力</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Android 开发</td>
+<td>1.0</td>
+<td>客户端、检索内核集成、UI</td>
+</tr>
+<tr>
+<td>数据/算法工程</td>
+<td>1.0</td>
+<td>词库流水线、词形/拆词、模型量化与评测</td>
+</tr>
+<tr>
+<td>设计（兼职）</td>
+<td>0.3</td>
+<td>设计令牌、关键页面、图标</td>
+</tr>
+<tr>
+<td>测试（兼职）</td>
+<td>0.5</td>
+<td>用例、设备矩阵、发版验证</td>
+</tr>
+</tbody>
+</table>
+<p><strong>总周期 9 周</strong>（含 1 周缓冲）。若只有 1 人全职，建议 14～16 周，且砍掉 P1 功能（发音、生词本复习、中→英）。</p>
+<h3>13.2 里程碑</h3>
+<table>
+<thead>
+<tr>
+<th>周</th>
+<th>阶段</th>
+<th>主要任务</th>
+<th>交付物</th>
+<th>依赖</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>W1</td>
+<td>立项</td>
+<td>需求冻结、数据授权确认、技术验证（mmap 读取 + 索引原型）</td>
+<td>需求基线、可行性报告</td>
+<td>—</td>
+</tr>
+<tr>
+<td>W2</td>
+<td>数据</td>
+<td>词库清洗流水线、专八分级、LEXD 格式定稿</td>
+<td><code>L1/L2/L4.lexd</code> v0.1</td>
+<td>W1</td>
+</tr>
+<tr>
+<td>W3</td>
+<td>内核</td>
+<td>IDX/DAT 读取、五级检索、SymSpell</td>
+<td>内核单测 200 例通过</td>
+<td>W2</td>
+</tr>
+<tr>
+<td>W4</td>
+<td>内核</td>
+<td>词形还原、派生剥离、拆词、短语匹配</td>
+<td>内核功能完备，P95 ≤ 8ms</td>
+<td>W3</td>
+</tr>
+<tr>
+<td>W5</td>
+<td>翻译</td>
+<td>模型量化、ORT 集成、分词器、分句调度</td>
+<td>端上翻译可用，20 词 ≤ 1.2s</td>
+<td>W2</td>
+</tr>
+<tr>
+<td>W6</td>
+<td>客户端</td>
+<td>首页 + 词条页 + 状态管理 + 设计落地</td>
+<td>主流程可走通</td>
+<td>W3、W4</td>
+</tr>
+<tr>
+<td>W7</td>
+<td>客户端</td>
+<td>划词、生词本、设置、深色模式、无障碍</td>
+<td>全功能可测</td>
+<td>W6</td>
+</tr>
+<tr>
+<td>W8</td>
+<td>调优</td>
+<td>冷启动、包体、内存、翻译质量调优；修 Bug</td>
+<td>全部性能达标</td>
+<td>W7</td>
+</tr>
+<tr>
+<td>W9</td>
+<td>发布</td>
+<td>全量测试、发版检查清单、签名、分发</td>
+<td>1.0.0 APK</td>
+<td>W8</td>
+</tr>
+<tr>
+<td>（缓冲）</td>
+<td>—</td>
+<td>风险吸收</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3>13.3 关键路径</h3>
+<pre><code>数据流水线 (W2) ──► 检索内核 (W3) ──► 客户端主流程 (W6) ──► 调优 (W8) ──► 发布 (W9)
+        └──────► 翻译集成 (W5) ─────────┘
+</code></pre>
+<p><strong>关键路径是"数据流水线 → 检索内核"</strong>：如果 W2 的词库包做不出来，后面全部堵塞。因此 W1 的技术验证必须包含"用 1,000 条真实数据跑通 LEXD 打包 + 读取"这个最小闭环，而不是只写文档。</p>
+<h3>13.4 完成定义（DoD）</h3>
+<p>一个功能算"完成"，需同时满足：</p>
+<ol>
+<li>代码合并，通过 CI（单测 + 静态检查 + 体积检查）；</li>
+<li>有对应的单元测试或 UI 测试；</li>
+<li>在 4GB 低端机与 Android 15 高端机上各验证一次；</li>
+<li>性能指标在阈值内，基准数据已提交；</li>
+<li>文案过审（无错别字、无机器翻译腔）；</li>
+<li>深色模式与 TalkBack 通过。</li>
+</ol>
+<hr>
+<h2 id="14-风险登记册">14. 风险登记册</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>风险</th>
+<th>概率</th>
+<th>影响</th>
+<th>应对措施</th>
+<th>触发信号</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>词库数据授权不清，无法商用分发</td>
+<td>中</td>
+<td>致命</td>
+<td>W1 完成法务复核；备选方案：全部改用自有+MIT 数据重建词库（周期 +3 周）</td>
+<td>法务出具否定意见</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>专八词表不准确（缺词/多词）</td>
+<td>高</td>
+<td>中</td>
+<td>三源交叉 + 5% 人工抽检；上线后提供"缺词反馈"（本地记录，用户手动导出）</td>
+<td>抽检不一致率 &gt; 3%</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>翻译质量达不到可用（MQM &lt; 3.5）</td>
+<td>中</td>
+<td>高</td>
+<td>术语占位优先；必要时换 m2m100（体积 +340MB，需分渠道发包）</td>
+<td>W5 评测不达标</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>包体超预算（标准包 &gt;45MB / 完整包 &gt;125MB）</td>
+<td>中</td>
+<td>中</td>
+<td>模型换 28MB 蒸馏版；词库换 level 22；例句精简 30%</td>
+<td>W8 体积检查</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>冷启动超 600ms（Compose）</td>
+<td>中</td>
+<td>中</td>
+<td>Plan B：首页改 XML 渲染</td>
+<td>W8 基准测试</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>低端机 OOM（翻译场景）</td>
+<td>中</td>
+<td>高</td>
+<td>设备内存检测，&lt; 2GB 默认关闭翻译；可手动开启</td>
+<td>内测崩溃日志</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>16KB 页对齐不通过</td>
+<td>低</td>
+<td>高</td>
+<td>提前把 NDK 升到 r28，CI 加校验步骤</td>
+<td>发布检查第 9 项</td>
+</tr>
+<tr>
+<td>R8</td>
+<td>一人开发导致进度失控</td>
+<td>高</td>
+<td>高</td>
+<td>砍 P1；把生词本/发音推到 v1.1；范围冻结后不接受新增</td>
+<td>W5 进度落后 &gt; 3 天</td>
+</tr>
+<tr>
+<td>R9</td>
+<td>词库包体积与检索速度的矛盾调不好</td>
+<td>低</td>
+<td>中</td>
+<td>块大小/压缩级别做成构建参数，可快速试错（32/64 条，level 15/19）</td>
+<td>内核基准不达标</td>
+</tr>
+<tr>
+<td>R10</td>
+<td>用户预期错位（以为是全能词典）</td>
+<td>中</td>
+<td>中</td>
+<td>商店页明确"专注技术文档阅读"；首启引导说明能力边界</td>
+<td>差评关键词</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="15-后续演进">15. 后续演进</h2>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>功能</th>
+<th>价值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v1.1</td>
+<td>扩展词库 L3 一键导入、生词本复习（SM-2）、截图 OCR 取词（离线模型约 18MB）</td>
+<td>覆盖生词与图片场景</td>
+</tr>
+<tr>
+<td>v1.2</td>
+<td>自定义术语库（用户可加自己的项目术语，优先级最高）</td>
+<td>团队/个人强需求</td>
+</tr>
+<tr>
+<td>v1.5</td>
+<td>中→英质量优化、多句段落翻译、蒸馏小模型（32MB，速度快 2×）</td>
+<td>写作场景</td>
+</tr>
+<tr>
+<td>v2.0</td>
+<td>整篇文档模式（PDF/EPUB 内嵌查词、段落对照）</td>
+<td>从"查词工具"升级为"阅读工具"</td>
+</tr>
+<tr>
+<td>v2.5</td>
+<td>词库社区共建（用户提交缺词，离线导出、人工合并进下一版）</td>
+<td>数据飞轮，且不破坏离线承诺</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="附录-a-数据库表结构">附录 A 数据库表结构</h2>
+<pre><code class="language-sql">PRAGMA journal_mode = WAL;
+PRAGMA synchronous  = NORMAL;
+
+-- 生词本
+CREATE TABLE IF NOT EXISTS notebook (
+    lemma_id  INTEGER PRIMARY KEY,
+    headword  TEXT    NOT NULL,
+    added_at  INTEGER NOT NULL,
+    tags      TEXT,
+    stage     INTEGER NOT NULL DEFAULT 0,
+    due_at    INTEGER,
+    note      TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_notebook_due ON notebook(due_at);
+
+-- 查询历史（只留最近 500 条，写入时裁剪）
+CREATE TABLE IF NOT EXISTS history (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    query     TEXT    NOT NULL,
+    ts        INTEGER NOT NULL,
+    hit       INTEGER NOT NULL DEFAULT 1     -- 1 命中 / 0 未收录
+);
+CREATE INDEX IF NOT EXISTS idx_history_ts ON history(ts DESC);
+
+-- 全文检索（释义/例句）
+CREATE VIRTUAL TABLE IF NOT EXISTS fts_sense USING fts5(
+    lemma_id UNINDEXED,
+    gloss,
+    tokenize = 'unicode61 remove_diacritics 2'
+);
+
+-- 缺词反馈（本地暂存，用户可导出）
+CREATE TABLE IF NOT EXISTS oov (
+    word      TEXT PRIMARY KEY,
+    count     INTEGER NOT NULL DEFAULT 1,
+    last_seen INTEGER NOT NULL
+);
+
+-- 元信息（词库版本、安装的扩展包）
+CREATE TABLE IF NOT EXISTS meta (
+    k TEXT PRIMARY KEY,
+    v TEXT
+);
+</code></pre>
+<p><strong>写入性能</strong>：生词本写入频率低（人工操作），直接同步写在 <code>Dispatchers.IO</code>；历史写入用内存队列 + 每 5 秒批量 flush，避免每键一次 IO。</p>
+<hr>
+<h2 id="附录-b-lexd-v1-字节级规范">附录 B LEXD v1 字节级规范</h2>
+<h3>B.1 文件头（64 字节）</h3>
+<table>
+<thead>
+<tr>
+<th>偏移</th>
+<th>长度</th>
+<th>类型</th>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>4</td>
+<td>char[4]</td>
+<td>magic</td>
+<td>固定 <code>LXDF</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>2</td>
+<td>uint16</td>
+<td>version</td>
+<td>格式版本，当前 1</td>
+</tr>
+<tr>
+<td>6</td>
+<td>2</td>
+<td>uint16</td>
+<td>flags</td>
+<td>bit0 zstd；bit1 含 REV；bit2 含 DERIV；bit3 含 PHRASE</td>
+</tr>
+<tr>
+<td>8</td>
+<td>4</td>
+<td>uint32</td>
+<td>packVer</td>
+<td>词库版本（YMMDD 十进制）</td>
+</tr>
+<tr>
+<td>12</td>
+<td>4</td>
+<td>uint32</td>
+<td>entryCount</td>
+<td>词条总数</td>
+</tr>
+<tr>
+<td>16</td>
+<td>4</td>
+<td>uint32</td>
+<td>blockSize</td>
+<td>每块词条数（32）</td>
+</tr>
+<tr>
+<td>20</td>
+<td>8</td>
+<td>uint64</td>
+<td>buildTime</td>
+<td>Unix 秒</td>
+</tr>
+<tr>
+<td>28</td>
+<td>16</td>
+<td>byte[16]</td>
+<td>srcHash</td>
+<td>源数据 SHA-256 前 16 字节</td>
+</tr>
+<tr>
+<td>44</td>
+<td>4</td>
+<td>uint32</td>
+<td>crcHeader</td>
+<td>前 44 字节 CRC32</td>
+</tr>
+<tr>
+<td>48</td>
+<td>16</td>
+<td>byte[16]</td>
+<td>reserved</td>
+<td>置 0</td>
+</tr>
+</tbody>
+</table>
+<h3>B.2 段表（每段 32 字节，位于偏移 64）</h3>
+<table>
+<thead>
+<tr>
+<th>偏移</th>
+<th>长度</th>
+<th>类型</th>
+<th>字段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>8</td>
+<td>char[8]</td>
+<td>name（<code>IDX\0\0\0\0\0</code>、<code>DAT</code>、<code>FORMS</code>、<code>DERIV</code>、<code>REV</code>、<code>PHRASE</code>、<code>META</code>）</td>
+</tr>
+<tr>
+<td>8</td>
+<td>8</td>
+<td>uint64</td>
+<td>offset（文件绝对偏移）</td>
+</tr>
+<tr>
+<td>16</td>
+<td>8</td>
+<td>uint64</td>
+<td>length（字节数）</td>
+</tr>
+<tr>
+<td>24</td>
+<td>4</td>
+<td>uint32</td>
+<td>crc32（段内容校验）</td>
+</tr>
+<tr>
+<td>28</td>
+<td>3</td>
+<td>uint8[3]</td>
+<td>reserved</td>
+</tr>
+<tr>
+<td>31</td>
+<td>1</td>
+<td>uint8</td>
+<td>algo（0 = raw，1 = zstd）</td>
+</tr>
+</tbody>
+</table>
+<h3>B.3 IDX 段</h3>
+<pre><code>uint32  bucketCount            // 必须是 2 的幂
+uint32  bucketOffsets[bucketCount + 1]
+// 之后是连续的块，块结构：
+//   uint8  prefixLen          // 与本桶上一块首词的公共前缀长度
+//   uint8  entryCount
+//   uint16 payloadLen         // 该块在 DAT 中占用的字节数（解压后）
+//   uint32 payloadOffset      // 在 DAT 段内的偏移
+//   entries: 每条 = uint8 suffixLen + char[suffixLen]（UTF-8）
+</code></pre>
+<p><strong>检索键排序</strong>：按 UTF-8 字节序升序（等价于 ASCII 小写字母序，因为头词已小写化且限制字符集）。</p>
+<h3>B.4 DAT 段</h3>
+<p>按块 zstd 压缩，每块解压后是连续的 JSON Lines（每行一个词条对象，UTF-8，无 BOM）。<strong>为什么用 JSONL 而不是自定义二进制</strong>：解析简单、可读、便于调试；性能瓶颈在解压与索引，不在 JSON 解析（1.0ms/32 条已可接受）。若后续要压这 1ms，可换 MessagePack（预计 −60% 解析时间，收益有限）。</p>
+<h3>B.5 FORMS / DERIV 段</h3>
+<pre><code>FORMS（前压缩 + zstd）：
+  uint32 count
+  entries: form\tlemmaId\n         （按 form 排序）
+
+DERIV：
+  uint32 count
+  entries: derived\tbaseId\taffixType\n
+           affixType: 0=无, 1=前缀, 2=后缀, 3=前后缀
+</code></pre>
+<h3>B.6 REV 段</h3>
+<pre><code>uint32 termCount
+entries（按 term 的 UTF-8 排序）:
+  uint8 termLen + term
+  uint16 refCount
+  refs: uint32 lemmaId + uint16 score   （score 0..1000）
+</code></pre>
+<h3>B.7 PHRASE 段</h3>
+<pre><code>uint32 phraseCount
+entries（按首词分桶后排序）:
+  uint8 patternLen + pattern（空格分隔小写）
+  uint32 entryId           // 指向 DAT 中的短语词条
+  uint8 wordCount          // 2..6
+</code></pre>
+<p><strong>版本兼容规则</strong>：读取器只接受 <code>version == 1</code>；<code>flags</code> 中出现未知 bit 时忽略该段（向前兼容）；<code>packVer</code> 低于 App 内置最小版本时拒绝挂载并提示。</p>
+<hr>
+<h2 id="附录-c-构建脚本骨架">附录 C 构建脚本骨架</h2>
+<pre><code class="language-python"># tools/06_pack.py  —— LEXD 打包器核心（省略 CLI 解析与日志）
+import json, struct, zlib, hashlib, time
+from pathlib import Path
+import zstandard as zstd
+
+MAGIC = b&quot;LXDF&quot;
+VERSION = 1
+BLOCK = 32
+
+def front_code(words: list[str]) -&gt; bytes:
+    &quot;&quot;&quot;把有序词列表编成 (prefixLen, suffix) 序列&quot;&quot;&quot;
+    out, prev = bytearray(), &quot;&quot;
+    for w in words:
+        n = 0
+        while n &lt; min(len(prev), len(w), 255) and prev[n] == w[n]:
+            n += 1
+        out.append(n)
+        out += w[n:].encode()
+        prev = w
+    return bytes(out)
+
+def build_index(entries: list[dict]) -&gt; tuple[bytes, bytes]:
+    entries.sort(key=lambda e: e[&quot;hw&quot;].encode())
+    idx = bytearray()
+    n = len(entries)
+    bucket_count = 1
+    while bucket_count &lt; max(64, n // 64):
+        bucket_count &lt;&lt;= 1
+
+    # 1) 先分块
+    blocks = [entries[i:i + BLOCK] for i in range(0, n, BLOCK)]
+    # 2) 按首词分桶
+    buckets: list[list[int]] = [[] for _ in range(bucket_count)]
+    for bi, blk in enumerate(blocks):
+        buckets[bucket_of(blk[0][&quot;hw&quot;], bucket_count)].append(bi)
+
+    idx += struct.pack(&quot;&lt;I&quot;, bucket_count)
+    offsets, cursor = [], 0
+    for b in range(bucket_count + 1):
+        if b &lt; bucket_count:
+            offsets.append(cursor)
+            cursor += len(buckets[b])
+        else:
+            offsets.append(cursor)
+    idx += struct.pack(f&quot;&lt;{bucket_count + 1}I&quot;, *offsets)
+
+    dat = bytearray()
+    cctx = zstd.ZstdCompressor(level=19)
+    prev_first = &quot;&quot;
+    for bi, blk in enumerate(blocks):
+        payload = &quot;\n&quot;.join(json.dumps(e, ensure_ascii=False) for e in blk).encode()
+        comp = cctx.compress(payload)
+        prefix_len = common_prefix(prev_first, blk[0][&quot;hw&quot;])
+        suffix = front_code([e[&quot;hw&quot;] for e in blk])
+        if len(comp) &gt; 0xFFFF:
+            raise ValueError(f&quot;block {bi} 压缩后超 64KB，请调小 BLOCK&quot;)
+        idx += struct.pack(&quot;&lt;BBH I&quot;, prefix_len, len(blk), len(comp), len(dat))
+        idx += bytes([len(suffix) &amp; 0xFF])
+        idx += suffix
+        dat += comp
+        prev_first = blk[0][&quot;hw&quot;]
+
+    return bytes(idx), bytes(dat)
+
+def write_pack(path: Path, sections: dict[str, bytes]) -&gt; None:
+    sec_table = bytearray()
+    body = bytearray()
+    base = 64 + 32 * len(sections)
+    for name, data in sections.items():
+        off = base + len(body)
+        sec_table += name.encode().ljust(8, b&quot;\0&quot;)
+        sec_table += struct.pack(&quot;&lt;Q Q I&quot;, off, len(data), zlib.crc32(data))
+        sec_table += b&quot;\0\0\0&quot; + b&quot;\0&quot;          # reserved + algo(raw)
+        body += data
+    hdr = struct.pack(
+        &quot;&lt;4sHHIIQ16sI16s&quot;,
+        MAGIC, VERSION, 0b1111, 20261027, sections[&quot;_count&quot;], BLOCK,
+        int(time.time()), sections[&quot;_hash&quot;], 0, b&quot;\0&quot; * 16,
+    )
+    hdr = hdr[:44] + struct.pack(&quot;&lt;I&quot;, zlib.crc32(hdr[:44])) + b&quot;\0&quot; * 16
+    path.write_bytes(hdr + bytes(sec_table) + bytes(body))
+</code></pre>
+<p><strong>关键校验</strong>（<code>08_verify.py</code>）：</p>
+<pre><code class="language-python">def verify(pack: Path, golden: Path):
+    d = LexdReader(pack)
+    bad = []
+    for item in json.loads(golden.read_text(&quot;utf-8&quot;)):
+        got = d.lookup(item[&quot;hw&quot;])
+        if got is None or not field_equal(got, item):
+            bad.append(item[&quot;hw&quot;])
+    rate = len(bad) / len(items)
+    assert rate &lt;= 0.01, f&quot;词库质量不达标：{rate:.2%}，问题词：{bad[:20]}&quot;
+</code></pre>
+<hr>
+<h2 id="附录-d-检索内核参考实现">附录 D 检索内核参考实现</h2>
+<pre><code class="language-kotlin">// core/dict/src/main/kotlin/LexdPack.kt（核心片段）
+class LexdPack private constructor(private val buf: MappedByteBuffer) {
+
+    private val bucketCount: Int
+    private val bucketOffsets: IntArray
+    private val blockBase: Long
+    private val datBase: Long
+    private val blockCache = LruCache&lt;Int, Block&gt;(64)
+
+    init {
+        buf.order(ByteOrder.LITTLE_ENDIAN)
+        require(buf.get(0) == 'L'.code.toByte() &amp;&amp; buf.get(3) == 'F'.code.toByte()) { &quot;bad magic&quot; }
+        val idxOff = sectionOffset(&quot;IDX&quot;).toInt()
+        bucketCount = buf.getInt(idxOff)
+        bucketOffsets = IntArray(bucketCount + 1) { buf.getInt(idxOff + 4 + it * 4) }
+        blockBase = (idxOff + 4 + (bucketCount + 1) * 4).toLong()
+        datBase = sectionOffset(&quot;DAT&quot;)
+    }
+
+    fun lookup(key: String): Entry? {
+        val b = (key.hashCode() and 0x7FFFFFFF) and (bucketCount - 1)
+        var lo = bucketOffsets[b]
+        var hi = bucketOffsets[b + 1]
+        if (lo &gt;= hi) return null
+        while (lo &lt; hi) {
+            val mid = (lo + hi) ushr 1
+            if (blockFirstWord(mid) &lt;= key) lo = mid + 1 else hi = mid
+        }
+        val blk = loadBlock(maxOf(bucketOffsets[b], lo - 1))
+        val i = blk.indexOf(key)
+        return if (i &gt;= 0) blk.entry(i) else null
+    }
+
+    private fun loadBlock(i: Int): Block =
+        blockCache.get(i) ?: decodeBlock(i).also { blockCache.put(i, it) }
+
+    private fun decodeBlock(i: Int): Block {
+        val p = blockBase + i * 9L
+        val prefixLen = buf.get(p).toInt() and 0xFF
+        val count = buf.get(p + 1).toInt() and 0xFF
+        val compLen = buf.getShort(p + 2).toInt() and 0xFFFF
+        val payloadOff = buf.getInt(p + 4)
+        val suffixLen = buf.get(p + 8).toInt() and 0xFF
+        var q = p + 9
+        val words = ArrayList&lt;String&gt;(count)
+        val suffixBuf = ByteArray(suffixLen) { buf.get(q + it) }
+        var sp = 0
+        var prev = lastWordOfBlock(i - 1).take(prefixLen)   // 需缓存块首词
+        repeat(count) {
+            val n = suffixBuf[sp++].toInt() and 0xFF
+            val sfx = String(suffixBuf, sp, n, Charsets.UTF_8)
+            sp += n
+            val w = (if (it == 0) prev else words.last().take(prefixLen)) + sfx
+            words += w
+        }
+        val raw = unzstd(slice(datBase + payloadOff, compLen))
+        return Block(words, raw)
+    }
+}
+</code></pre>
+<p><strong>注意</strong>：上面的 <code>prefixLen</code> 语义是"<strong>块内</strong>相邻词共享前缀"，<code>prefixLen</code> 为 uint8，因此<strong>块内共享前缀不能超过 255 字符</strong>（头词最长 64，安全）。跨块的 <code>prev</code> 只需用于解第一词，实际实现中把"块首词"单独存一份 <code>firstWords: Array&lt;String&gt;</code>（内存约 1.2 万 × 平均 9 字节 ≈ 110KB），可省掉链式依赖，逻辑更简单——<strong>推荐这个更简单的做法</strong>。</p>
+<hr>
+<h2 id="附录-e-技术术语种子表节选-40-条">附录 E 技术术语种子表（节选 40 条）</h2>
+<table>
+<thead>
+<tr>
+<th>英文</th>
+<th>词性</th>
+<th>中文</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idempotent</td>
+<td>adj.</td>
+<td>幂等的</td>
+<td>多次执行与一次执行效果相同</td>
+</tr>
+<tr>
+<td>idempotency key</td>
+<td>phr.</td>
+<td>幂等键</td>
+<td>支付/接口设计</td>
+</tr>
+<tr>
+<td>backpressure</td>
+<td>n.</td>
+<td>背压</td>
+<td>下游限流反馈上游</td>
+</tr>
+<tr>
+<td>throttle</td>
+<td>v.</td>
+<td>限流；节流</td>
+<td>限制单位时间速率</td>
+</tr>
+<tr>
+<td>debounce</td>
+<td>v.</td>
+<td>防抖</td>
+<td>与 throttle 对比记忆</td>
+</tr>
+<tr>
+<td>shard</td>
+<td>n./v.</td>
+<td>分片</td>
+<td>水平切分的独立单元</td>
+</tr>
+<tr>
+<td>race condition</td>
+<td>phr.</td>
+<td>竞态条件</td>
+<td>与 deadlock 并列</td>
+</tr>
+<tr>
+<td>deadlock</td>
+<td>n.</td>
+<td>死锁</td>
+<td>—</td>
+</tr>
+<tr>
+<td>livelock</td>
+<td>n.</td>
+<td>活锁</td>
+<td>与死锁区分</td>
+</tr>
+<tr>
+<td>serialization</td>
+<td>n.</td>
+<td>序列化；串行化</td>
+<td>两义项须分列</td>
+</tr>
+<tr>
+<td>deserialize</td>
+<td>v.</td>
+<td>反序列化</td>
+<td>—</td>
+</tr>
+<tr>
+<td>deprecate</td>
+<td>v.</td>
+<td>弃用</td>
+<td>不等于 remove</td>
+</tr>
+<tr>
+<td>deprecation</td>
+<td>n.</td>
+<td>弃用（状态）</td>
+<td>—</td>
+</tr>
+<tr>
+<td>regression</td>
+<td>n.</td>
+<td>回归（缺陷）</td>
+<td>非"退化"，需技术义项</td>
+</tr>
+<tr>
+<td>flaky test</td>
+<td>phr.</td>
+<td>不稳定测试</td>
+<td>随机失败的测试</td>
+</tr>
+<tr>
+<td>smoke test</td>
+<td>phr.</td>
+<td>冒烟测试</td>
+<td>—</td>
+</tr>
+<tr>
+<td>canary release</td>
+<td>phr.</td>
+<td>金丝雀发布</td>
+<td>灰度的一种</td>
+</tr>
+<tr>
+<td>blue-green deployment</td>
+<td>phr.</td>
+<td>蓝绿部署</td>
+<td>—</td>
+</tr>
+<tr>
+<td>rollback</td>
+<td>n./v.</td>
+<td>回滚</td>
+<td>—</td>
+</tr>
+<tr>
+<td>failover</td>
+<td>n.</td>
+<td>故障转移</td>
+<td>—</td>
+</tr>
+<tr>
+<td>circuit breaker</td>
+<td>phr.</td>
+<td>断路器</td>
+<td>熔断模式</td>
+</tr>
+<tr>
+<td>rate limiting</td>
+<td>phr.</td>
+<td>限流</td>
+<td>—</td>
+</tr>
+<tr>
+<td>load balancing</td>
+<td>phr.</td>
+<td>负载均衡</td>
+<td>—</td>
+</tr>
+<tr>
+<td>sticky session</td>
+<td>phr.</td>
+<td>会话保持</td>
+<td>—</td>
+</tr>
+<tr>
+<td>eventual consistency</td>
+<td>phr.</td>
+<td>最终一致性</td>
+<td>—</td>
+</tr>
+<tr>
+<td>strong consistency</td>
+<td>phr.</td>
+<td>强一致性</td>
+<td>—</td>
+</tr>
+<tr>
+<td>quorum</td>
+<td>n.</td>
+<td>法定人数；多数派</td>
+<td>分布式共识</td>
+</tr>
+<tr>
+<td>checkpoint</td>
+<td>n.</td>
+<td>检查点</td>
+<td>与 snapshot 区分</td>
+</tr>
+<tr>
+<td>snapshot</td>
+<td>n.</td>
+<td>快照</td>
+<td>—</td>
+</tr>
+<tr>
+<td>index scan</td>
+<td>phr.</td>
+<td>索引扫描</td>
+<td>—</td>
+</tr>
+<tr>
+<td>full table scan</td>
+<td>phr.</td>
+<td>全表扫描</td>
+<td>—</td>
+</tr>
+<tr>
+<td>normalization</td>
+<td>n.</td>
+<td>归一化；范式化</td>
+<td>视语境</td>
+</tr>
+<tr>
+<td>memoization</td>
+<td>n.</td>
+<td>记忆化</td>
+<td>缓存函数结果</td>
+</tr>
+<tr>
+<td>lazy evaluation</td>
+<td>phr.</td>
+<td>惰性求值</td>
+<td>—</td>
+</tr>
+<tr>
+<td>closure</td>
+<td>n.</td>
+<td>闭包</td>
+<td>—</td>
+</tr>
+<tr>
+<td>monorepo</td>
+<td>n.</td>
+<td>单体仓库</td>
+<td>—</td>
+</tr>
+<tr>
+<td>dependency injection</td>
+<td>phr.</td>
+<td>依赖注入</td>
+<td>—</td>
+</tr>
+<tr>
+<td>feature flag</td>
+<td>phr.</td>
+<td>功能开关</td>
+<td>—</td>
+</tr>
+<tr>
+<td>observability</td>
+<td>n.</td>
+<td>可观测性</td>
+<td>三支柱：log/metric/trace</td>
+</tr>
+<tr>
+<td>telemetry</td>
+<td>n.</td>
+<td>遥测（数据）</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>完整 20,000 条见 <code>data/tech/glossary.tsv</code>。<strong>写作规范</strong>：中文列必须是"能直接读进句子"的工程译法，括号内只放必要的区分说明；禁止"…的"式词典腔。</p>
+</blockquote>
+<hr>
+<h2 id="附录-f-开源组件与许可清单">附录 F 开源组件与许可清单</h2>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>版本</th>
+<th>许可</th>
+<th>用途</th>
+<th>分发义务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kotlin / kotlinx.coroutines</td>
+<td>2.0.21 / 1.9.0</td>
+<td>Apache-2.0</td>
+<td>语言与并发</td>
+<td>保留声明</td>
+</tr>
+<tr>
+<td>Jetpack Compose</td>
+<td>BOM 2024.10</td>
+<td>Apache-2.0</td>
+<td>UI</td>
+<td>保留声明</td>
+</tr>
+<tr>
+<td>androidx.sqlite (bundled)</td>
+<td>2.4.0</td>
+<td>Apache-2.0</td>
+<td>FTS5</td>
+<td>保留声明</td>
+</tr>
+<tr>
+<td>kotlinx-serialization</td>
+<td>1.7.3</td>
+<td>Apache-2.0</td>
+<td>JSON</td>
+<td>保留声明</td>
+</tr>
+<tr>
+<td>ONNX Runtime (Mobile)</td>
+<td>1.20.0</td>
+<td>MIT</td>
+<td>推理</td>
+<td>保留声明</td>
+</tr>
+<tr>
+<td>zstd (jni)</td>
+<td>1.5.6</td>
+<td>BSD-3 / Apache-2.0</td>
+<td>压缩</td>
+<td>保留声明</td>
+</tr>
+<tr>
+<td>ECDICT</td>
+<td>—</td>
+<td>MIT（数据多源）</td>
+<td>词条基础</td>
+<td>署名 + 法务复核</td>
+</tr>
+<tr>
+<td>wordfreq</td>
+<td>3.1</td>
+<td>Apache-2.0</td>
+<td>词频</td>
+<td>署名</td>
+</tr>
+<tr>
+<td>Tatoeba 例句</td>
+<td>—</td>
+<td>CC BY 2.0 FR</td>
+<td>例句</td>
+<td>署名 + 许可链接</td>
+</tr>
+<tr>
+<td>opus-mt-en-zh</td>
+<td>—</td>
+<td>CC BY 4.0</td>
+<td>翻译模型</td>
+<td>署名 + 不得暗示背书</td>
+</tr>
+<tr>
+<td>opus-mt-zh-en</td>
+<td>—</td>
+<td>CC BY 4.0</td>
+<td>翻译模型</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>jieba（仅构建期）</td>
+<td>0.42</td>
+<td>MIT</td>
+<td>中文分词</td>
+<td>不进 APK</td>
+</tr>
+<tr>
+<td>SentencePiece（仅构建期）</td>
+<td>0.2.0</td>
+<td>Apache-2.0</td>
+<td>分词模型训练</td>
+<td>不进 APK</td>
+</tr>
+<tr>
+<td><strong>未采用</strong>：espeak-ng</td>
+<td>—</td>
+<td>GPLv3</td>
+<td>发音</td>
+<td>传染性，排除</td>
+</tr>
+<tr>
+<td><strong>未采用</strong>：CC-CEDICT</td>
+<td>—</td>
+<td>CC BY-SA 4.0</td>
+<td>中英词典</td>
+<td>SA 传染，排除</td>
+</tr>
+<tr>
+<td><strong>未采用</strong>：NLLB-200</td>
+<td>—</td>
+<td>CC BY-NC 4.0</td>
+<td>翻译</td>
+<td>禁商用，排除</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="附录-g-快速上手给接手的开发者">附录 G 快速上手（给接手的开发者）</h2>
+<pre><code class="language-bash"># 1) 拉代码 + 初始化工具链（Python 3.11 / JDK 17 / Android SDK 35 / NDK r28）
+git clone &lt;repo&gt; lexforge &amp;&amp; cd lexforge
+uv sync                                  # 词库流水线依赖
+
+# 2) 首次构建词库（约 12 分钟）
+make dict-all
+
+# 3) 跑内核单测（不依赖 Android）
+./gradlew :core:dict:test :core:search:test
+
+# 4) 装到设备
+./gradlew :app:installDebug
+
+# 5) 性能基准（需连接真机）
+./gradlew :benchmark:connectedCheck
+
+# 6) 发版（自动跑检查清单 1-10 项）
+make release
+</code></pre>
+<p><strong>三个最容易踩的本地环境问题</strong>：</p>
+<ol>
+<li><strong><code>make dict-all</code> 报 zstd 找不到</strong> → 安装 <code>zstandard</code> Python 包，不要用系统 <code>zstd</code> 命令行版本。</li>
+<li><strong>Debug 包查词返回 null</strong> → <code>noCompress</code> 只在 release/打包时生效；debug 下 <code>openFd</code> 仍可能失败，需用 <code>--no-compress</code> 的 debug 变体或直接读文件（<code>app/src/debug/assets</code> 走 <code>FileChannel</code> 而非 <code>AssetFileDescriptor</code>）。</li>
+<li><strong>ORT 在模拟器上崩</strong> → 模拟器默认 x86_64，而 APK 只含 arm64；用 arm64 真机或临时加 <code>x86_64</code> ABI（仅本地）。</li>
+</ol>
+<hr>
+<h2 id="附录-h-开发环境与工具链">附录 H 开发环境与工具链</h2>
+<blockquote>
+<p>回答一个高频问题：<strong>开发这个 App 是不是必须装 Android Studio？</strong>
+<strong>不是。</strong> 但它是唯一"省时间"的选择。下面把依赖关系摊开讲。</p>
+</blockquote>
+<h3>H.1 只有一样东西是硬性的</h3>
+<p>APK 不是 Android Studio 产出的，是下面这条流水线产出的：</p>
+<pre><code>Kotlin/Java 源码
+   │ kotlinc + javac（编译）
+   ▼
+.class 文件
+   │ d8 / R8（转 dex + 压缩混淆）
+   ▼
+classes.dex ─┐
+             ├─► 合并 ─► zipalign ─► apksigner ─► app.apk
+资源(res/) ──┤
+   │ aapt2 compile + link
+   ▼
+resources.arsc + 编译后的 res
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>归属</th>
+<th>作用</th>
+<th>能否绕过</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>aapt2</code></td>
+<td>Android SDK Build-Tools</td>
+<td>编译资源、生成 <code>resources.arsc</code>、链接 manifest</td>
+<td>❌ 不能，AOSP 私有格式</td>
+</tr>
+<tr>
+<td><code>d8</code> / <code>R8</code></td>
+<td>Build-Tools</td>
+<td>Java 字节码 → DEX；R8 负责 shrink/obfuscate</td>
+<td>❌ 不能</td>
+</tr>
+<tr>
+<td><code>zipalign</code></td>
+<td>Build-Tools</td>
+<td>对齐，16KB 页要求靠它</td>
+<td>❌ 不能</td>
+</tr>
+<tr>
+<td><code>apksigner</code></td>
+<td>Build-Tools</td>
+<td>v2/v3 签名，未签名包无法安装</td>
+<td>❌ 不能</td>
+</tr>
+<tr>
+<td><code>adb</code></td>
+<td>Platform-Tools</td>
+<td>装包、看日志、抓 trace</td>
+<td>可用第三方（如 scrcpy + 无线调试）部分替代</td>
+</tr>
+<tr>
+<td>Gradle</td>
+<td>项目自带 wrapper</td>
+<td>组织上面这些工具的执行顺序</td>
+<td>✅ 可手写脚本，但没必要</td>
+</tr>
+<tr>
+<td><strong>Android Studio</strong></td>
+<td>JetBrains + Google</td>
+<td><strong>IDE：编辑器 + 预览 + 调试 + 分析器</strong></td>
+<td>✅ <strong>可以换</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论</strong>：必须装的是 <strong>JDK + Android SDK（cmdline-tools / build-tools / platform-tools）</strong>，约 1.2GB；Android Studio 只是给这套东西套了个壳（安装包约 1.2GB，装完连 SDK 约 6GB）。</p>
+<h3>H.2 三种可行路径</h3>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>需要装</th>
+<th>得到</th>
+<th>失去</th>
+<th>首次配置</th>
+<th>适合</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A. Android Studio</strong>（官方）</td>
+<td>AS + JDK 17</td>
+<td>编辑器、Compose Preview、Layout Inspector、Profiler、APK Analyzer、模拟器管理</td>
+<td>磁盘 ~6GB、内存吃紧</td>
+<td>30～40 分钟</td>
+<td>✅ 默认推荐</td>
+</tr>
+<tr>
+<td><strong>B. 任意编辑器 + 命令行</strong></td>
+<td>JDK 17 + cmdline-tools（含 sdkmanager/apkanalyzer）+ VS Code/记事本</td>
+<td>能编译、能装、能发版</td>
+<td><strong>Compose 预览、图形化 Profiler、布局检查器</strong></td>
+<td>1～2 小时</td>
+<td>机器弱、不想装大件、习惯终端</td>
+</tr>
+<tr>
+<td><strong>C. 云端 CI 构建</strong></td>
+<td>只要 Git 账号</td>
+<td>推送即出 APK（含签名）</td>
+<td>本地无法即时调试 UI，迭代靠"改 → 推 → 等 3 分钟"</td>
+<td>2～4 小时</td>
+<td>多机协作、发版规范化</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>路径 B 与 C 可以叠加</strong>：本地用 B 写代码 + 跑单测，CI 出包。这也是很多团队的实际做法。</p>
+</blockquote>
+<h3>H.3 路径 B：不装 Android Studio 的最小流程（Windows）</h3>
+<pre><code class="language-bash"># ① JDK 17（Temurin，别用 21+，AGP 8.7 对 17 最稳）
+winget install EclipseAdoptium.Temurin.17.JDK
+
+# ② Android 命令行工具（解压到 C:\android\cmdline-tools\latest）
+#    https://developer.android.com/studio#command-line-tools-only
+setx ANDROID_HOME &quot;C:\android&quot;
+setx PATH &quot;%PATH%;C:\android\cmdline-tools\latest\bin;C:\android\platform-tools&quot;
+
+# ③ 装 SDK 组件（只装需要的，不装模拟器可省 4GB）
+sdkmanager --install &quot;platform-tools&quot; &quot;platforms;android-35&quot; &quot;build-tools;35.0.0&quot;
+
+# ④ 接受许可
+sdkmanager --licenses
+
+# ⑤ 编译（Gradle wrapper 会自动下 Gradle，不需要单独装）
+gradlew.bat :app:assembleStandardRelease
+
+# ⑥ 产物
+# app/build/outputs/apk/standard/release/app-standard-release.apk
+
+# ⑦ 装到真机（USB 调试打开）
+adb install -r app/build/outputs/apk/standard/release/app-standard-release.apk
+
+# ⑧ 看日志 / 崩溃
+adb logcat -s LexForge:V AndroidRuntime:E
+
+# ⑨ 校验签名与体积
+apksigner verify --print-certs app-standard-release.apk
+apkanalyzer apk size app-standard-release.apk
+</code></pre>
+<p><strong>路径 B 的真实代价</strong>（诚实说）：改一行 UI，看不到效果，必须 <code>gradlew installDebug</code> + 切到手机看，一次 8～20 秒；AS 里是 Compose Preview 秒级刷新。<strong>UI 打磨阶段效率差 3～5 倍。</strong> 纯逻辑开发（检索内核、词形还原、打包器）几乎没差别。</p>
+<h3>H.4 路径 B 的替代手段（缺什么补什么）</h3>
+<table>
+<thead>
+<tr>
+<th>AS 能力</th>
+<th>无 AS 的替代</th>
+<th>体验差距</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compose Preview</td>
+<td>写一个 <strong>debug-only「组件画廊」Activity</strong>，把常用组件平铺在一屏，改完 <code>installDebug</code> 看真机</td>
+<td>大（无实时刷新）</td>
+</tr>
+<tr>
+<td>Layout Inspector</td>
+<td><code>adb shell uiautomator dump</code> 看层级 XML</td>
+<td>中（无像素级叠层）</td>
+</tr>
+<tr>
+<td>CPU Profiler</td>
+<td><code>adb shell perfetto -o /data/local/tmp/t.pftrace -t 10s sched freq gfx view</code> + <a href="https://ui.perfetto.dev">ui.perfetto.dev</a> 打开</td>
+<td>小（更专业，但门槛高）</td>
+</tr>
+<tr>
+<td>帧率</td>
+<td><code>adb shell dumpsys gfxinfo com.lexforge framestats</code></td>
+<td>小</td>
+</tr>
+<tr>
+<td>内存</td>
+<td><code>adb shell dumpsys meminfo com.lexforge</code> + <code>am dumpheap</code> 后用 MAT 分析</td>
+<td>中</td>
+</tr>
+<tr>
+<td>APK Analyzer</td>
+<td><code>apkanalyzer apk size / files list / dex references</code></td>
+<td>几乎无（就是同一个工具）</td>
+</tr>
+<tr>
+<td>数据库查看</td>
+<td><code>adb shell "run-as com.lexforge sqlite3 databases/lexforge.db"</code></td>
+<td>小</td>
+</tr>
+<tr>
+<td>模拟器</td>
+<td><code>emulator -avd Pixel7 -no-window</code> 无头启动；或直接用真机（<strong>推荐真机</strong>，本项目性能指标只能真机测）</td>
+<td>小</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>一句话：<strong>能力都有 CLI 等价物，只是要自己拼</strong>。AS 的价值是"把这些拼好并做成即时反馈"。</p>
+</blockquote>
+<h3>H.5 路径 C：CI 出包（GitHub Actions 示例）</h3>
+<pre><code class="language-yaml"># .github/workflows/android.yml
+name: build-apk
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build
+        run: ./gradlew :app:assembleStandardRelease :app:assembleFullRelease
+      - name: Sign
+        run: |
+          echo &quot;${{ secrets.KEYSTORE_B64 }}&quot; | base64 -d &gt; release.jks
+          ./gradlew :app:signRelease  # 或直接在 gradle signingConfig 里读环境变量
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: app/build/outputs/apk/**/*.apk
+</code></pre>
+<p><strong>密钥管理</strong>：keystore 存 GitHub Secrets（base64 编码），绝不进仓库；<code>signingConfig</code> 从环境变量读取，本地无密钥时跳过签名只出 debug 包。</p>
+<h3>H.6 版本钉死（避免"在我机器上能跑"）</h3>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>JDK</td>
+<td>17（Temurin 17.0.x）</td>
+<td>不要用 21+，AGP 8.7 兼容性最好的是 17</td>
+</tr>
+<tr>
+<td>AGP</td>
+<td>8.7.x</td>
+<td>与 Gradle 8.9 配套</td>
+</tr>
+<tr>
+<td>Gradle</td>
+<td>8.9（用 wrapper，不装全局）</td>
+<td><code>gradle/wrapper/gradle-wrapper.properties</code> 锁版本</td>
+</tr>
+<tr>
+<td>Kotlin</td>
+<td>2.0.21</td>
+<td>与 Compose Compiler 插件同版本</td>
+</tr>
+<tr>
+<td>compileSdk / targetSdk</td>
+<td>35</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Build-Tools</td>
+<td>35.0.0</td>
+<td><code>aapt2</code> / <code>zipalign</code> / <code>apksigner</code> 都在这</td>
+</tr>
+<tr>
+<td>NDK</td>
+<td>28.x（可选）</td>
+<td>只有自编译 native 才需要；本项目用 ORT 预编译 AAR，<strong>可不装</strong></td>
+</tr>
+<tr>
+<td>Python</td>
+<td>3.11（词库流水线）</td>
+<td>只需 <code>zstandard</code> / <code>jieba</code> / <code>wordfreq</code></td>
+</tr>
+<tr>
+<td>磁盘</td>
+<td>路径 B ≈ 3GB；路径 A ≈ 15GB（含模拟器）</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3>H.7 硬件要求</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>最低</th>
+<th>推荐</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>内存</td>
+<td>8GB</td>
+<td>16GB</td>
+<td>8GB 需把 Gradle 堆降到 1.5GB（<code>gradle.properties: org.gradle.jvmargs=-Xmx1536m</code>），并关掉 Kotlin daemon 复用</td>
+</tr>
+<tr>
+<td>CPU</td>
+<td>4 核</td>
+<td>8 核</td>
+<td>全量编译 3～8 分钟（8 核）/ 6～15 分钟（4 核）</td>
+</tr>
+<tr>
+<td>磁盘</td>
+<td>20GB 空闲</td>
+<td>40GB</td>
+<td>Gradle 缓存 + 多 flavor 产物会膨胀</td>
+</tr>
+<tr>
+<td>设备</td>
+<td><strong>一台 arm64 真机</strong></td>
+<td>真机 + 一台低端机</td>
+<td>本项目性能指标（冷启动、查词延迟、翻译耗时）<strong>只能真机测</strong>，模拟器数据无参考价值</td>
+</tr>
+</tbody>
+</table>
+<h3>H.8 对本项目的具体建议</h3>
+<p>这个项目的工作其实分三块，<strong>只有第三块需要 Android 工具链</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>工作块</th>
+<th>占比</th>
+<th>需要什么</th>
+<th>什么时候做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>① 词库流水线（清洗 / 打包 / 覆盖率）</td>
+<td>30%</td>
+<td>只要 Python</td>
+<td><strong>先做</strong>，完全不碰 Android</td>
+</tr>
+<tr>
+<td>② 检索内核（<code>core:dict</code> / <code>core:search</code> / <code>core:morph</code>）</td>
+<td>25%</td>
+<td>JDK + Gradle，纯 JVM 单测</td>
+<td>其次，<code>gradlew :core:search:test</code> 即可</td>
+</tr>
+<tr>
+<td>③ UI + 集成 + 性能调优</td>
+<td>45%</td>
+<td>Android SDK（+ AS 更好）</td>
+<td>最后</td>
+</tr>
+</tbody>
+</table>
+<p><strong>所以最优路径是</strong>：</p>
+<ol>
+<li><strong>先不装 Android Studio</strong>，用 Python 把词库跑通（能查出 1 万词、覆盖率报告出来）；</li>
+<li>用 JDK + Gradle 把检索内核写完、单测跑绿（此时还没有一行 UI 代码）；</li>
+<li>到 UI 阶段<strong>再决定</strong>——如果只是自己用、能忍受慢一点的迭代，路径 B 够；如果要打磨交互和动画，装 AS（免费，40 分钟）。</li>
+</ol>
+<blockquote>
+<p>反过来说：<strong>如果你一上手就装 AS 然后从 UI 开始写</strong>，很可能前两周做出来的界面很好看，但词库是空的、查不到东西——这是这类项目最常见的翻车方式。</p>
+</blockquote>
+<h3>H.9 macOS / Linux 可以吗</h3>
+<table>
+<thead>
+<tr>
+<th>平台</th>
+<th>可行性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows 10/11</td>
+<td>✅ 完全可行</td>
+<td>本项目全程 Windows 开发无阻碍（NDK 可选，无 iOS 需求）</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>✅ 可行</td>
+<td>反而更省事（JDK 与 SDK 生态成熟）</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>✅ 可行</td>
+<td>CI 常用，桌面开发体验取决于发行版</td>
+</tr>
+<tr>
+<td>平板/手机（Termux）</td>
+<td>⚠️ 理论可行</td>
+<td>能装 SDK 但编译慢、AS 无法运行，不建议</td>
+</tr>
+<tr>
+<td>云开发机（如 GitHub Codespaces）</td>
+<td>✅ 可行</td>
+<td>编译可以，真机调试要 USB 转发或无线 adb</td>
+</tr>
+</tbody>
+</table>
+<p><strong>唯一真正的平台限制</strong>：如果未来要做 iOS，必须有 macOS + Xcode；本项目（纯 Android）没有这个限制。</p>
+<hr>
+<h2 id="附录-i-实现进度与实测数据v0202026-10-27">附录 I 实现进度与实测数据（v0.2.0，2026-10-27）</h2>
+<p>代码仓库：<code>D:/Program/Android/projects/LexForge</code></p>
+<h3>I.1 已完成</h3>
+<table>
+<thead>
+<tr>
+<th>文档条目</th>
+<th>状态</th>
+<th>落地说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LEXD 包 + 前压缩块索引 + mmap</td>
+<td>✅</td>
+<td>查词 P95 <strong>0.023ms</strong>（JVM，1.3 万单词）</td>
+</tr>
+<tr>
+<td>五级检索</td>
+<td>✅</td>
+<td>短语/精确 → 词形 → 派生 → 拆词 → 前缀 → 纠错，端到端均值 0.286ms</td>
+</tr>
+<tr>
+<td>词形还原</td>
+<td>✅</td>
+<td>预生成 FORMS 表 23,350 条 + 规则兜底 + NO_STRIP 白名单</td>
+</tr>
+<tr>
+<td>派生剥离</td>
+<td>✅</td>
+<td>DERIV 表 2,472 条</td>
+</tr>
+<tr>
+<td>标识符拆词</td>
+<td>✅</td>
+<td>getUserById → get/User/By/Id，带「获取…」模板提示</td>
+</tr>
+<tr>
+<td>中文反查</td>
+<td>✅</td>
+<td>REV 段 28,672 个中文词</td>
+</tr>
+<tr>
+<td>短语库（第 6.5 节）</td>
+<td>✅ <strong>超额</strong></td>
+<td><strong>120,000 条</strong> 2~4 词短语，全部带中文释义</td>
+</tr>
+<tr>
+<td>词→短语关联</td>
+<td>✅ <strong>新增</strong></td>
+<td>REL 段：7,761 个词 / 177,890 条关联，每词最多 80 条</td>
+</tr>
+<tr>
+<td>词条页</td>
+<td>✅</td>
+<td>音标、词性分组、义项标签、相关短语预览、查看全部</td>
+</tr>
+<tr>
+<td>短语全列表 + 详情跳转</td>
+<td>✅ <strong>新增</strong></td>
+<td>独立路由，点短语进完整词条，内含拆词可回跳</td>
+</tr>
+<tr>
+<td>拍照 / 相册取词（第 10 章 P2）</td>
+<td>✅ <strong>提前</strong></td>
+<td>ML Kit bundled 离线 OCR + 手指框选，<strong>不需要 CAMERA 权限</strong></td>
+</tr>
+<tr>
+<td>零权限</td>
+<td>✅</td>
+<td>无 INTERNET / CAMERA / 存储；ML Kit 合并进来的网络权限已用 <code>tools:node="remove"</code> 移除</td>
+</tr>
+</tbody>
+</table>
+<h3>I.2 未开始</h3>
+<table>
+<thead>
+<tr>
+<th>条目</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>整句翻译（第 7 章）</td>
+<td>opus-mt int8 约 +82MB，必须先分包</td>
+</tr>
+<tr>
+<td>划词取词 <code>ACTION_PROCESS_TEXT</code>（10.1）</td>
+<td>v0.3 最高优先级，<strong>不增加包体</strong></td>
+</tr>
+<tr>
+<td>生词本（10.6）</td>
+<td>v0.4</td>
+</tr>
+<tr>
+<td>专八词表三源交叉（4.4）</td>
+<td>当前用「考试标签 + 词频」近似，<strong>不声称精确等于专八 13,000</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>I.3 实测体积（release，arm64，R8）</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>体积</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>词库包 <code>L2.lexd</code>（13.3 万词条）</td>
+<td>6.55 MB</td>
+</tr>
+<tr>
+<td>应用代码 + Compose + 资源</td>
+<td>≈ 1.3 MB</td>
+</tr>
+<tr>
+<td><strong>不含 OCR 的 APK</strong></td>
+<td><strong>7.8 MB</strong></td>
+</tr>
+<tr>
+<td>ML Kit OCR 原生库（arm64）</td>
+<td>+9.5 MB</td>
+</tr>
+<tr>
+<td>OCR 模型资源</td>
+<td>+1.0 MB</td>
+</tr>
+<tr>
+<td>OCR 代码（R8 后）</td>
+<td>+0.7 MB</td>
+</tr>
+<tr>
+<td><strong>含 OCR 的 APK</strong></td>
+<td><strong>19 MB</strong></td>
+</tr>
+</tbody>
+</table>
+<p>对照文档 4.9 的预算：词库从 22.9MB 降到 6.55MB（因为 L3 的 40 万词未内置、例句未启用），OCR 则是文档里没有预估的新增项。</p>
+<h3>I.4 与文档设计的三处偏差</h3>
+<ol>
+<li><strong>索引结构简化</strong>：去掉 <code>bucketCount/bucketOffsets</code> 两级分桶，直接对块做全局二分——块本身已全局有序，13 万词只需 17 次块首比较，代码少一半。</li>
+<li><strong>压缩算法</strong>：DAT 块用 zlib 而非 zstd，省掉 zstd-jni 的 7MB 原生库；<code>algo</code> 字段已预留，换算法不改格式。</li>
+<li><strong>载荷格式</strong>：词条用 <code>\x01</code> 分隔的自定义行格式，不是 JSON——解析快 3 倍、体积小 20%、零依赖。</li>
+</ol>
+<h3>I.5 新增的段：REL</h3>
+<pre><code>REL 段（zlib）：
+  word\tphrase1,phrase2,...      // 按常用度排序，最多 80 条
+</code></pre>
+<p>短语排序在构建期完成，信号优先级：</p>
+<ol>
+<li>首词是动词（用 ECDICT 的 <code>pos</code> 字段判词性占比 ≥20%）</li>
+<li>末词是常用小词（up/off/out/on/in/over/back/down… 按常用度赋权）</li>
+<li>整条短语里最生僻 token 的词频排名</li>
+<li>惩罚项：非小词结尾、4 词短语、来自网络词典、首字母大写（专名）</li>
+</ol>
+<p>这样 <code>take</code> 的第一屏是 <code>take up / take off / take out / take on / take in / take over / take back</code>，而不是 ECDICT 里混着的 "cash take"。</p>
+<h3>I.6 两个值得记的坑</h3>
+<ul>
+<li><strong>abiFilters 取并集</strong>：<code>defaultConfig</code> 里声明 ABI 后，<code>buildTypes.release</code> 再声明只会并集，x86_64 的 OCR 原生库仍会被打进 release（+11MB）。正解：ABI 只在 <code>debug</code> 里声明，release 单独声明 arm64。</li>
+<li><strong>ML Kit 会塞网络权限</strong>：其清单贡献 <code>INTERNET</code> 与 <code>ACCESS_NETWORK_STATE</code>，必须在主清单用 <code>tools:node="remove"</code> 删掉。删掉后 OCR 仍正常（已实测 12 个词识别成功），因为 bundled 模型完全本地。</li>
+</ul>
+<hr>
+<h2 id="附录-j-v030-增量2026-10-27">附录 J v0.3.0 增量（2026-10-27）</h2>
+<p>对应文档 6.3「派生词剥离」的落地，以及两处文档没写的产品级补强。</p>
+<h3>J.1 运行期派生词拆解</h3>
+<p><strong>问题</strong>：<code>affordable</code> 有，<code>unaffordable</code> 查不到。构建期 DERIV 表只收录"派生词与基础词都在库中"的组合，词典里没有的词永远进不来。</p>
+<p><strong>方案</strong>：<code>core/morph/Derivation.kt</code> 做两层词缀拆解。</p>
+<table>
+<thead>
+<tr>
+<th>关键点</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>后缀不能简单删除</td>
+<td><code>-ability</code> 还原成 <code>able</code>、<code>-ibility</code> 还原成 <code>ible</code>，否则 readability 会被拆成 read 而不是 readable</td>
+</tr>
+<tr>
+<td>顺序</td>
+<td>先纯后缀 → 再纯前缀 → 再前缀+后缀 → 最后后缀+前缀</td>
+</tr>
+<tr>
+<td>前后缀表</td>
+<td>34 个前缀 / 30 组后缀（含还原替换串），按长度降序匹配</td>
+</tr>
+<tr>
+<td>防误拆</td>
+<td>词干 ≥ 2 字母、结果 ≥ 4 字母，且<strong>必须在词库中存在</strong></td>
+</tr>
+<tr>
+<td>层数</td>
+<td>最多 2 层，第 3 层基本是瞎猜</td>
+</tr>
+</tbody>
+</table>
+<p>命中后 UI 明确标注，不做无声替换：</p>
+<pre><code>unaffordable 可能是 un- + affordable，词典未单列该派生词
+</code></pre>
+<p><strong>同时补典</strong>：<code>glossary.tsv</code> 增加 16 条高频派生词（affordable / unaffordable / readability / reusability / maintainable…），人工写释义。构建后 unaffordable 成为正式词条，<code>afford</code> 的派生词栏也能列出它。</p>
+<h3>J.2 派生词族（词条页新区块）</h3>
+<p><code>DERIV</code> 段在读取时反转成 <code>base → [derived…]</code>（2,476 条，运行时 1ms 内建好），词条页新增「派生词 N」区块：</p>
+<ul>
+<li>正向：<code>afford</code> → <code>affordable</code>，点进去看释义</li>
+<li>反向：派生词页顶部显示「源自 afford →」，可跳回基础词</li>
+</ul>
+<h3>J.3 OCR 改词</h3>
+<p>OCR 会认错（见下），所以在释义卡上加「改」：</p>
+<ul>
+<li>点词 → 释义卡 → 「改」→ 弹窗预填识别结果 → 改成正确的词 → 「查这个」</li>
+<li>框选列表每行也有「改」入口</li>
+<li>对话框与释义卡都跟随主题</li>
+</ul>
+<p><strong>OCR 常见错误</strong>（写进产品预期，别当成 bug）：<code>l/I/1</code>、<code>O/0</code>、<code>rn/m</code>、<code>cl/d</code> 混淆；竖排或艺术字整行丢失；<code>-&gt;</code>、<code>__init__</code> 这类符号被切碎或粘连；反光、模糊、小字号下整词识别失败。清晰截图（1080p、正对、无压缩噪点）实测 12 个词全对。</p>
+<h3>J.4 主题</h3>
+<p><code>ThemeMode = AUTO / LIGHT / DARK</code>，首页右上角胶囊点击循环，<code>SharedPreferences</code> 持久化。深色调色板单独设计（背景 #121412 / 主色 #6FD3A0），不是简单反色；OCR 图片区在深色下保持近黑底，减少白底刺眼。</p>
+<h3>J.5 数据</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>v0.2.1</th>
+<th>v0.3.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>词条</td>
+<td>133,079</td>
+<td>133,088</td>
+</tr>
+<tr>
+<td>派生表</td>
+<td>2,472</td>
+<td>2,476</td>
+</tr>
+<tr>
+<td>术语表</td>
+<td>264 条</td>
+<td>280 条</td>
+</tr>
+<tr>
+<td>词库包</td>
+<td>6.55 MB</td>
+<td>6.72 MB</td>
+</tr>
+<tr>
+<td>release APK</td>
+<td>19 MB</td>
+<td>19 MB</td>
+</tr>
+<tr>
+<td>单测</td>
+<td>38</td>
+<td>43（新增 Derivation 5 条）</td>
+</tr>
+</tbody>
+</table>
+</main>
+</div>
+<script>
+const links=[...document.querySelectorAll('nav a')];
+const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+const obs=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(e.isIntersecting){
+      links.forEach(l=>l.classList.remove('active'));
+      const a=map.get(e.target.id);
+      if(a){a.classList.add('active'); a.scrollIntoView({block:'nearest'});}
+    }
+  });
+},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+document.querySelectorAll('h2[id]').forEach(h=>obs.observe(h));
+</script>
+</body>
+</html>
